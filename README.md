@@ -198,7 +198,7 @@ Technical Mentoring  •  Agile Methodologies  •  Cross-functional Collaborati
 
 ## Education
 
-**Master of Computer Applications** | Indira Gandhi National Open University
+**Master of Computer Applications** | Indira Gandhi National Open University   
 **Bachelor of Computer Applications** | Berhampur University
 
 ---
