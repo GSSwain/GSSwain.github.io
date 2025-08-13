@@ -1,2 +1,0 @@
-"use strict";(self.webpackChunkgsswain=self.webpackChunkgsswain||[]).push([[883],{429:function(e,t,s){s.r(t);var n=s(7294);t.default=()=>n.createElement("div",null,n.createElement("h1",null,"NOT FOUND"),n.createElement("p",null,"You just hit a route that doesn't exist... the sadness."))}}]);
-//# sourceMappingURL=component---src-pages-404-js-0c360ca14608822ba2f3.js.map
