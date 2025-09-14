@@ -1,0 +1,155 @@
+---
+layout: post
+title: SpringBoot + DigitalOcean Droplets
+tag:
+- spring-boot
+- digitalocean
+- droplet
+- cloud
+- virtual-machine
+---
+
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*YLJ_Go4vlfU9qDwPpOld3Q.png" /></figure>
+<p>In this post, we’ll learn how to build and deploy a simple HelloWorld <strong><em>SpringBoot</em></strong> web app on
+    a <strong><em>DigitalOcean Droplets</em></strong> (Virtual Machine). We’ll start by creating a SpringBoot web app,
+    package that into a fat JAR (You can skip this step, if are familiar with SpringBoot). After this, we’ll create a
+    <strong><em>systemd</em></strong> service file for running the web app. Then we create a Droplet, connect to that
+    using SSH, configure the Droplet to run SpringBoot App, upload the artifacts and run and test our SpringBoot web
+    app. Finally we clean up the resources.</p>
+<blockquote>Note: <strong>Bela</strong> is my friend and in this post we’ll all say “Hi, Bela!”</blockquote>
+<p><strong><em>Table of Contents</em></strong></p>
+<ol>
+    <li><a href="#fd57">Building a HelloWorld SpringBoot Web App</a></li>
+    <li><a href="#5abd">Systemd service file for running the Web App</a></li>
+    <li><a href="#f316">Create a DigitalOcean Droplet</a><br>1. <a href="#b95b">Create a key pair</a> (We’ll use this
+        for accessing the Droplet)<br>2. <a href="#ab8c">Create a project</a> (Optional step - Only if you don’t have
+        one)<br>3. <a href="#b34e">Create a Droplet</a></li>
+    <li><a href="#2ca7">SSH into the Droplet</a></li>
+    <li><a href="#8dfc">Configure the Droplet for SpringBoot Web App</a><br>1. <a href="#8521">Install JRE in the
+            Droplet</a><br>2. <a href="#4614">Copy Artifacts into the Droplet</a> (JAR and systemd service file)</li>
+    <li><a href="#2a6e">Run and Test the SpringBoot Web App</a><br>1. <a href="#8416">Run the SpringBoot Web
+            App</a><br>2. <a href="#31b2">Test the SpringBoot Web App</a></li>
+    <li><a href="#7a21">Clean up</a></li>
+    <li><a href="#5fd0">Resources</a></li>
+</ol>
+<h3><strong>Building a HelloWorld SpringBoot Web App</strong></h3>
+<p>Go to <a href="https://start.spring.io">Spring Initializr</a>, add the <strong><em>Spring Web</em></strong>
+    dependency and click on GENERATE. As of today, the defaults on Spring Initializr are Project type (Maven),
+    SpringBoot version (2.3.1), packaging(JAR), Java version (8). ( Also Change the group and artifact name if you would
+    like to. I have used <strong><em>com.bela</em></strong> as my group name here)</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*os2sGLaW899yq3OSVotNxA.png" /></figure>
+<p>We’ll add a <strong><em>/hello</em></strong> endpoint which returns the string “<strong><em>Hi, Bela!</em></strong>”.
+    (I have added the controller in the <em>DemoApplication.java. </em>This can and should be in a different
+    file<em>)</em></p>
+<pre>@SpringBootApplication<br>public class DemoApplication {<br><br>   public static void main(String[] args) {<br>      SpringApplication.run(DemoApplication.class, args);<br>   }<br><br>   @RestController(&quot;/&quot;)<br>   class HelloWorld {<br>      @GetMapping(&quot;hello&quot;)<br>      public String hello(){<br>         return &quot;Hi, Bela!&quot;;<br>      }<br>   }<br>}</pre>
+<p>Run the project on local</p>
+<pre>./mvnw spring-boot:run</pre>
+<p>Test the <strong><em>/hello</em></strong> endpoint on localhost</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/574/1*TAX2JKQH6Rpb6IGSRRfoWA.png" /></figure>
+<p>Now we can build and package the project (This will create the fat JAR
+    <strong><em>demo-0.0.1-SNAPSHOT.jar</em></strong> in <strong><em>target</em></strong> folder)</p>
+<pre>./mvnw clean package</pre>
+<h3>Systemd service file for running the Web App</h3>
+<p>Create a <strong><em>hello-world-spring-boot.service</em></strong> file with the following content.</p>
+<pre>[Unit]<br>Description=Hello World Demo Spring Boot<br>After=network.target<br>StartLimitIntervalSec=0<br>[Service]<br>Type=simple<br>Restart=always<br>RestartSec=1<br>User=<strong><em>root</em></strong><br><strong>ExecStart=/usr/bin/java -jar /artifact/demo-0.0.1-SNAPSHOT.jar</strong></pre>
+<pre>[Install]<br>WantedBy=multi-user.target</pre>
+<blockquote>Note: Use a different user instead of <strong>root. </strong>Here root is used to keep this example simple.
+    Also note the JAR absolute path which is <strong>/artifact. </strong>We’ll upload the JAR file into the
+    <strong>/artifact</strong> directory of the Droplet. This folder name can be anything. You must ensure the JAR
+    exists in the path we specify here.</blockquote>
+<h3>Create a DigitalOcean Droplet</h3>
+<p>Droplets are essentially virtual machines (They are like AWS EC2 instances, Azure VMs, Google Compute Engine).</p>
+<h4>Create a key pair</h4>
+<p>Before we create a Droplet, let’s create a key pair to safely access the Droplet. I’ll be using
+    <strong><em>ssh-keygen </em></strong>to generate the key pair and store them in a folder named key. (If you are on
+    windows, you can follow the link in the resouces section below.)</p>
+<pre>ssh-keygen -t rsa -b 4096 -C “<a href="mailto:your-email@domain.rootdomain">your-email@</a>somedomain.com” -f ./key/id_rsa</pre>
+<p>At this point, your folder should look like this</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/692/1*gLTzCSlY-n-OCF3DPm88CA.png" /></figure>
+<h4>Create a project</h4>
+<p>This step is optional. If you already have created a project, move to <a href="#b34e">creating a Droplet</a>.<br>If
+    you don’t have any project, then create a new project.</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*AEivt2JWQgXj-3Opmr0nKg.png" /></figure>
+<h4>Create a Droplet</h4>
+<p>Now we create a Droplet by selecting the OS distribution and version, Virtual machine plan, datacenter region, VPC
+    Network, SSH Keys, Project. We keep everything default apart from selecting the region to Bangalore and adding our
+    ssh keys for access control.</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*osh7NRQqAuHvRBolwCZi0Q.png" /></figure>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*TUusqoW1XDJWCRkZ55a0gQ.png" /></figure>
+<p>Copy the <em>generated </em>public key <strong><em>key/id_rsa.pub </em></strong>into the SSH key content section and
+    provide a name for the key.</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*cidBNDcXag9-yxL48evV1Q.png" /></figure>
+<p>Make sure you select the correct project here, if you have more than one. Now click on
+    <strong>Create Droplet</strong>.</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*tvZl7TR_1vKvOKV0AjmLjw.png" /></figure>
+<p>We should see something like this where it shows the Droplet under the resources with the progress indicator in blue.
+</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*XsPiJ8D1JBtinKanaHY3tA.png" /></figure>
+<p>Once the Droplet is ready, take note of the <strong><em>IP address</em></strong> and copy it as per the below image.
+    We’ll use this IP to execute the remaining steps.</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*M_1gLlhLJKt_KIyJrjcAoQ.png" /></figure>
+<h3><strong>SSH into the Droplet</strong></h3>
+<p>You can use the private key to ssh into the Droplet. Open a terminal window and enter the following command. (Replace
+    the IP in bold with the public IP of your Droplet)</p>
+<pre>ssh -i key/id_rsa root@<strong>&lt;IP Address of the Droplet&gt;</strong></pre>
+<p>e.g. if I replace the IP placeholder with <strong><em>157.245.100.221, </em></strong>then the command would look like
+</p>
+<pre>ssh -i key/id_rsa root@<strong><em>157.245.100.221</em></strong></pre>
+<h3>Configure the Droplet for SpringBoot Web App</h3>
+<h4>Install JRE in the Droplet</h4>
+<p>Run the following commands (This needs to be run from the terminal we used to ssh into the Droplet)</p>
+<pre>sudo apt update<br>sudo apt install openjdk-8-jre-headless<br>java -version</pre>
+<p>The output of the java -version should look something like this.</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/988/1*V1Ee-RxbYVOizj1a_cXKZw.png" /></figure>
+<h4>Copy Artifacts into the Droplet</h4>
+<p>We’ll copy the JAR into <strong><em>/aritifact</em></strong> directory and copy the <strong><em>systemd</em></strong>
+    service file to <strong><em>/etc/systemd/system</em></strong> directory</p>
+<p>Create a directory named <strong><em>artifact </em></strong>in the root directory of the Droplet</p>
+<pre>mkdir /artifact</pre>
+<p>Now copy the JAR and the systemd service file into the Droplet. Open a<strong> new terminal window on your local
+        system</strong> and run the following command (Remember to replace the IP placeholder in bold with the public IP
+    of your Droplet)</p>
+<pre>scp -i key/id_rsa demo/target/demo-0.0.1-SNAPSHOT.jar root@<strong>&lt;IP Address of the Droplet&gt;</strong>:/artifact</pre>
+<pre>scp -i key/id_rsa hello-world-spring-boot.service <a href="mailto:root@157.245.100.221">root@</a><strong>&lt;IP Address of the Droplet&gt;</strong>:/etc/systemd/system</pre>
+<p>e.g. if I replace the IP placeholder with <strong><em>157.245.100.221</em></strong> the command would look like</p>
+<pre>scp -i key/id_rsa demo/target/demo-0.0.1-SNAPSHOT.jar root@<strong>157.245.100.221</strong>:/artifact</pre>
+<pre>scp -i key/id_rsa hello-world-spring-boot.service <a href="mailto:root@157.245.100.221">root@</a><strong><em>157.245.100.221</em></strong>:/etc/systemd/system</pre>
+<h3>Run and Test the SpringBoot Web App</h3>
+<h4>Run the SpringBoot Web App</h4>
+<p>Start the service (This needs to be run from the terminal we used to ssh into the Droplet)</p>
+<pre>systemctl start hello-world-spring-boot.service</pre>
+<p><strong>Bonus (Optional Step):</strong></p>
+<p>You can make sure to bring the service up in case of a Droplet restart, by using the following command in the Droplet
+    (Run in the ssh session).</p>
+<pre>systemctl enable hello-world-spring-boot.service</pre>
+<h4>Test the SpringBoot Web App</h4>
+<p>Now let’s test our endpoint from within the ssh session</p>
+<pre>curl http://localhost:8080/hello</pre>
+<p>Seems to be working from the ssh session. Now let’s test using the browser using the public ip. (Use your Droplet IP
+    instead of the one shown in the below image i.e. your URL would be http://<strong>&lt;IP Address of the
+        Droplet&gt;</strong>:8080/hello)</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/952/1*E9GE03T6k9kCdc0VCA23LQ.png" /></figure>
+<p>Phew! now our spring boot service runs on the Droplet. Thanks for being patient and reading till this point. I hope
+    this was helpful. Do not forget to read the clean up section to remove the resources we created (Otherwise you’ll be
+    chraged for those resources).</p>
+<h3><strong>Clean up</strong></h3>
+<p>If you wanted to run this just for trying out DigitalOcean, do not forget to clean up the resources we created.
+    Delete the Droplet, Delete the project.</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*Q-enEJFn9tNZCiAhU-1O7g.png" /></figure>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*bhkt21X_kmO5iBNFVjtoKw.png" /></figure>
+<p>For deleting the project, go to the project, then click on the <strong><em>Settings</em></strong> tab and scroll to
+    the bottom of the page and click on <strong><em>Delete Project</em></strong> button.</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/954/1*cOKr7yRgKEbnXw4GaR0PWw.png" /></figure>
+<h3>Resources</h3>
+<ul>
+    <li><a href="https://spring.io/projects/spring-boot">SpringBoot</a></li>
+    <li><a href="https://www.digitalocean.com/products/droplets/">DigitalOcean Droplets</a></li>
+    <li><a href="https://en.wikipedia.org/wiki/Systemd">systemd</a></li>
+    <li><a
+            href="https://www.digitalocean.com/docs/droplets/how-to/add-ssh-keys/">https://www.digitalocean.com/docs/droplets/how-to/add-ssh-keys/</a>
+    </li>
+    <li><a
+            href="https://github.com/GSSwain/spring-boot-on-digital-ocean-droplet">https://github.com/GSSwain/spring-boot-on-digital-ocean-droplet</a>
+    </li>
+</ul><img src="https://medium.com/_/stat?event=post.clientViewed&referrerSource=full_rss&postId=410b8bbc6fe6" width="1"
+    height="1" alt="">

@@ -1,0 +1,244 @@
+---
+layout: post
+title: Serverless PDF Generation from HTML (WYSIWYG as PDF)
+tag:
+- aws-lambda
+- aws-sam
+- puppeteer
+- pdf-generation
+- serverless
+---
+
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*feAZdBBLCdvr46oRhe8fVg.png" /></figure>
+<p>In this post, we’ll learn how to create PDF document from HTML using Puppeteer. We’ll also look at a
+    <em>Serverless</em> solution using AWS Lambda. This solution can run on most public clouds and on premises with
+    minor or no modifications.
+</p>
+<h4>Prerequisite:</h4>
+<p>You must be familiar with NodeJS &amp; ES6 to follow along the code examples.<br>You must be familiar with AWS Lambda
+    &amp; AWS SAM to follow the <em>AWS</em> based <em>Serverless</em> example.</p>
+<h3>How do you generate PDF?</h3>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*Dk6SjE_rT-qzJA0--Y8Xjw.png" /></figure>
+<p>Generally you have a template with placeholders. You need to replace the placeholders with actual data and generate a
+    PDF using some compute. The text of the template may come from one team (product and/or legal team), while the look
+    and feel of the template may come from another team (UX or CX team). From a developer’s perspective, he/she gets a
+    sample PDF (with dummy data as placeholder) on some story on an agile board. Now the developer would reverse
+    engineer this sample PDF and develop the code to generate similar PDFs with different sets of data.</p>
+<p>Throughout my professional career, I have used multiple tools for generating PDFs including <em>OpenText
+        StreamServe</em>, <em>iText</em>, <em>JasperReports</em>, <em>Apache PDFbox, Adobe Coldfusion and jsPDF.
+    </em>Being a developer at heart, I certainly have my own bias towards which tool is best among them. In 2017, at
+    GDDIndia I was introduced to Puppeteer.(I was there and it was all real. I badly miss being physically present on
+    such events ever since Covid-19 has emerged.) Here is the Youtube video of the session.</p><iframe
+    src="https://cdn.embedly.com/widgets/media.html?src=https%3A%2F%2Fwww.youtube.com%2Fembed%2FXEw_n_wsk1o%3Fstart%3D639%26feature%3Doembed%26start%3D639%26end%3D1120&amp;display_name=YouTube&amp;url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DXEw_n_wsk1o&amp;image=https%3A%2F%2Fi.ytimg.com%2Fvi%2FXEw_n_wsk1o%2Fhqdefault.jpg&amp;key=a19fcc184b9711e1b4764040d3dc5c07&amp;type=text%2Fhtml&amp;schema=youtube"
+    width="854" height="480" frameborder="0" scrolling="no"><a
+        href="https://medium.com/media/1ae7521bef933ebe99e57c9bb27ae001/href">https://medium.com/media/1ae7521bef933ebe99e57c9bb27ae001/href</a></iframe>
+<p>With just a few lines of code, one can generate a PDF from a HTML page.<br>Is generating a PDF this simple? Yes,
+    it is!</p>
+<h3>Puppeteer:</h3>
+<blockquote>Puppeteer is a Node library which provides a high-level API to control Chrome or Chromium over the <a
+        href="https://chromedevtools.github.io/devtools-protocol/">DevTools Protocol</a>. By default, it launches in
+    headless mode and can do everything a modern browser can, including rendering HTML with CSS. It is under <a
+        href="https://github.com/puppeteer/puppeteer/blob/main/LICENSE">Apache License 2.0</a> and comes with permission
+    for commercial use.</blockquote>
+<h3>Show me the code</h3>
+<p>Here is the code block, which generates a PDF given an URL and a name for the PDF file.</p>
+<pre>const puppeteer = require(&#39;puppeteer&#39;);</pre>
+<pre>const generatePDF = async (pageUrl, newPdfFileName) =&gt; {<br>   const browser = await puppeteer.launch();<br>   const page = await browser.newPage();<br>   await page.goto(pageUrl, {<br>      waitUntil: &#39;networkidle0&#39;<br>   });<br>   await page.pdf({<br>       path: `/tmp/${newPdfFileName}`,<br>       format: &#39;a4&#39;,<br>       printBackground: true<br>   });<br>   await browser.close();<br>}</pre>
+<h3>What does the above code do?</h3>
+<p>It uses Puppeteer to launch a browser. Then it opens a new page and navigates to a given URL and waits till the page
+    is <em>fully loaded</em> (in the above code fully loaded means, Puppeteer would wait until no new network requests
+    are sent for half a second after page load). Then it generates a PDF of the rendered page and finally closes
+    the browser.</p>
+<h4>Sample Usage:</h4>
+<p>The following line of code would create a PDF version of a sample html page using the above function.</p>
+<pre>generatePDF(‘https://gsswain.com/print-sample/&#39;, &#39;Print-sample.pdf&#39;);</pre>
+<h3>Do I need to host the HTML pages publicly?</h3>
+<p><strong>No.</strong><br>1. You need to ensure the above code (when running on some compute) should be able to access
+    your html page. You can host the pages privately (on your intranet may be or have a private api which responds with
+    html pages to be printed).<br>2. The browser can render local html files with
+    <em>file:///&lt;path-to-your-html-page&gt; e.g.
+        page.goto(‘</em>file:///Users/gsswain/Documents/gsswain.com/print-sample/index.html’<em>)<br>3. </em>You can
+    directly render HTML by calling the<em> page.setContent(&lt;html-to-be-rendered&gt;) </em>method instead of
+    calling<em> page.goto() </em>in the above code snippet<em>.</em>
+</p>
+<h3>How does this solution help?</h3>
+<p>The UX/CX team can provide a HTML/CSS based templates rather than providing a sample PDF and you just need to focus
+    on replacing the placeholders with actual data and the above function would take care of generating your PDF. If the
+    UX/CX team provides a sample PDF, in that case you can either use some tool to convert the PDF into HTML and create
+    a template out of that or you can use the expertise of your web developers to create the HTML and CSS based
+    templates. Preferably convincing your UX/CX team to provide the HTML templates would be more efficient and make the
+    entire process a lot faster.</p>
+<p><strong><em>Side note:</em></strong> I personally like the JS template strings to create templates (instead of using
+    another tool/framework/library) and some generic JS code which would take care of validation, replacing the place
+    holders with real data and finally give me the HTML page to create a PDF. I would write more on this templating
+    solution on a different post and would update the link here.</p>
+<h3>Have you used this on production?</h3>
+<p><em>Short answer-</em> <strong>YES.<br></strong><em>Long answer-</em> I always wanted to use this in production, but
+    you know, it’s difficult to convince people 😜. What’s life without meetings!. <strong>This is tested on
+        production</strong> and has done really well generating documents with 30–40 pages (most of the testing anyways
+    happens on production only 😜). As promised I’ll give a AWS Lambda based Serverless solution.</p>
+<h3>Generating PDF from HTML on AWS Lambda</h3>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*ABfSa_ESG33cI6wPH4sdxg.png" /></figure>
+<p>The above image shows all the AWS resources that we are going to create. I’ll briefly explain the solution below.</p>
+<ul>
+    <li>The Lambda sits behind API Gateway. The API accepts a request payload in JSON format. This payload must contain
+        an url for which a PDF needs to be generated. The Lambda generates the required PDF and puts it in a S3 bucket.
+        Finally the API responds with a 201 HTTP status code and a location header containing the S3 object URL. (For
+        supporting CORS one needs to return the S3 URL in the response body as well.)</li>
+    <li>For this example, the S3 bucket has a bucket policy which only allows <strong>public access to objects tagged
+            with <em>public=yes.</em></strong>(You should <strong>ideally block public access to S3</strong> and either
+        share a S3 Signed URL or a CloudFront Signed URL)</li>
+    <li>We also have a Usage plan to restrict the maximum number of requests one can make and an API key is mandatory to
+        access the API.</li>
+    <li>The Puppeteer dependency is put into a Lambda Layer. Instead of using the <em>puppeteer</em> <em>npm</em>
+        library we need to use <em>chrome-aws-lambda </em>as per the troubeleshooting guideline <a
+            href="https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md">here</a>.</li>
+</ul>
+<h3>Lambda Source Code</h3>
+<p>Let’s see the AWS SAM template first</p>
+<h4>SAM template (template.yaml)</h4>
+{% gist cc133627507af9e4454308a4c8e68bf6 template.yaml %}
+<p><em>The </em>Lambda Runtime<em> is </em><em>NodeJS 14.x and the code is written in </em><em>ES6. With </em><em>Node
+        14 Module support (specify </em><em>&quot;type&quot;: &quot;module&quot; in </em><em>package.json) I thought we
+        might not have to transpile, but it does not work on </em><em>AWS Lambda yet. The Lambda runtime itself uses a
+    </em><em>require(&lt;path-to-handler&gt; for the</em><em>handler configured in the </em><em>Lambda. So we need to
+        transpile and I’m transpiling using </em><em>Babel</em>. Look at the package.json and the build.sh files below
+    for the transpilation. Also note the Handler in the above template points to the dist directory.</p>
+<p>Now let’s see the Lambda code.</p>
+<h4>Lambda Handler (pdf-generator/src/app.js)</h4>
+{% gist cc133627507af9e4454308a4c8e68bf6 app.js %}
+<p>The handler simply delegates to the PDF Generation Request handler.</p>
+<h4>Pdf Generation Request Handler (pdf-generator/src/pdf-generation-request-handler.js)</h4>
+{% gist cc133627507af9e4454308a4c8e68bf6 pdf-generation-request-handler.js %}
+<p>This request handler orchestrates the request. First it converts the Lambda event into a PDF Generation request in
+    the constructor (You can take care of any validations here using ValueObject pattern). In the handleRequest method,
+    it creates the PDF using the PDF Generation Service, stores it on S3using the S3 PDF Storage Service and finally
+    sends the PDF created response.</p>
+<h4>Pdf Generation Request Adapter (pdf-generator/src/pdf-generation-request-adapter.js)</h4>
+{% gist cc133627507af9e4454308a4c8e68bf6 pdf-generation-request-adapter.js %}
+<p>Just picks up the url from the request body and generates a random file name for the PDF. (The name generation code
+    can be place in another file or can also be taken as an input in the request payload).</p>
+<h4>Pdf Generation Service (pdf-generator/src/pdf-generation-service.js)</h4>
+{% gist cc133627507af9e4454308a4c8e68bf6 pdf-generation-service.js %}
+<p>This service expects the PDF Generation request. It generates the PDF file in the tmp folder and returns the path to
+    the file from the generate method. Notice the difference in terms of the import of chromium and how we launch
+    Puppeteer. There is also a DEFAULT_PRINT_OPTIONS which can be overridden by accepting the same in the request
+    payload. For this example, the default should do.</p>
+<h4>Pdf Storage Service (pdf-generator/src/s3-pdf-storage-service.js)</h4>
+{% gist cc133627507af9e4454308a4c8e68bf6 s3-pdf-storage-service.js %}
+<p>This stores the file on S3 and <em>returns the HTTP based object URL</em>.</p>
+<p><strong><em>Note:</em></strong> When running on local with sam local start-api, if we set the MODE to SAM_LOCAL, then
+    it would not try to upload to S3, instead return a dummy URL.</p>
+<h4>PDF Generation Request (pdf-generator/src/pdf-storage-request.js)</h4>
+{% gist cc133627507af9e4454308a4c8e68bf6 pdf-storage-request.js %}
+<h4>S3 PDF Storage Request Adapter (pdf-generator/src/s3-pdf-storage-request-adapter.js)</h4>
+{% gist cc133627507af9e4454308a4c8e68bf6 s3-pdf-storage-request-adapter.js %}
+<p>This takes care of creating a PutObjectCommand for storing the PDF. We are tagging the object with public=yes and the
+    ContentDisposition is set to attachment which would start downloading the file on a browser.</p>
+<h4>File Service (pdf-generator/src/file-service.js)</h4>
+{% gist cc133627507af9e4454308a4c8e68bf6 file-service.js %}
+<p>This file returns a read stream for a file.</p>
+<h4>Pdf Generation Response Adapter (pdf-generator/src/pdf-generation-response-adapter.js)</h4>
+{% gist cc133627507af9e4454308a4c8e68bf6 pdf-generation-response-adapter.js %}
+<p>This converts the response as expected by AWS API Gateway.</p>
+<h4>Config (pdf-generator/src/config.js)</h4>
+{% gist cc133627507af9e4454308a4c8e68bf6 config.js %}
+<p>Use this Config file instead of reading the configuration from the environment variables directly everywhere in
+    the code.</p>
+<h4>package.json (pdf-generator/package.json)</h4>
+{% gist cc133627507af9e4454308a4c8e68bf6 package.json %}
+<p><strong><em>Note: </em></strong>The transpile script uses Babel to transform the modules to CommonJS</p>
+<h4>build.sh</h4>
+{% gist cc133627507af9e4454308a4c8e68bf6 build.sh %}
+<p>Takes care of transpiling the JS code before running sam build</p>
+<h4>.npmignore</h4>
+{% gist cc133627507af9e4454308a4c8e68bf6 .npmignore %}
+
+<p>Ignore the tests and src files to be included in the lambda package.</p>
+<h4>Lambda Layer package.json (dependencies/nodejs/node14/package.json)</h4>
+{% gist cc133627507af9e4454308a4c8e68bf6 layer-package.json %}
+<p>This file contains all the dependencies which should go into the Lambda Layer. Also revisit the
+    PuppeteerDependencyLayer in the above SAM template.</p>
+<h4>main.yml(.github/workflows/main.yml)</h4>
+{% gist cc133627507af9e4454308a4c8e68bf6 ci.yml %}
+<p>This section is optional and is not a requirement for building and deploying AWS Lambda. You can use your favourite
+    CI/CD tool.<br>The above file is a Github Actions workflow configuration file. <strong>This will trigger the build,
+        validate the SAM template and then deploy to AWS on git push</strong>. <strong><em>Now that’s real power and
+            productivity ❤️</em></strong><em>. </em>You need to set the <strong><em>secrets</em></strong>
+    (<em>AWS_ACCESS_KEY_ID</em>, <em>AWS_SECRET_ACCESS_KEY</em> and <em>AWS_DEFAULT_REGION</em>) in your Github repo for
+    this to work.</p>
+<p><em>I humbly thank the </em><em>Github team and </em><em>Microsoft for Github Actions.</em></p>
+<h4>Parameters for sam local (sam-local-env.json)</h4>
+{% gist cc133627507af9e4454308a4c8e68bf6 sam-local-env.json %}
+<p>The above file contains the parameter overrides for testing the Lambda on local. One can also use LocalStack for a
+    complete integration test (a topic which would need a separate post).</p>
+<p>Now that’s all the code. The entire repo is available <a
+        href="https://github.com/Girija-Shankar-Swain/html-to-pdf-generator-puppeteer-aws-lambda">here</a> for
+    reference. Feel free to send a pull request, if you have any suggestions.</p>
+<h3>Build on Local:</h3>
+<p>Run the build.sh script to build the project on local.</p>
+<h3>Test on Local:</h3>
+<p>Make sure you have Docker installed and running on your machine.</p>
+<h4>Start the api</h4>
+<p>sam local start-api --env-vars sam-local-env.json</p>
+<p>Now you can test the API deployed on local, with the following request.</p>
+<h4>Sample Request:</h4>
+<pre>curl -i -X POST \<br>  <a href="http://127.0.0.1:3000/generate-pdf/">http://127.0.0.1:3000/generate-pdf/</a> \<br>  -H &#39;cache-control: no-cache&#39; \<br>  -H &#39;content-type: application/json&#39; \<br>  -d &#39;{<br> &quot;url&quot;: &quot;<a href="https://gsswain.com/print-sample/">https://gsswain.com/print-sample/</a>&quot;<br>}&#39;</pre>
+<h4>Sample Response:</h4>
+<pre>HTTP/1.0 201 CREATED<br>Content-Type: application/json<br>Access-Control-Allow-Origin: <a href="http://localhost:8080">http://localhost:8080</a><br>location: <a href="https://dummyS3Url/3c8e8e4c-f7b4-4f5b-8e85-8dc06f8a22c3_1615739992609_353075938260911200.pdf">https://dummyS3Url/3c8e8e4c-f7b4-4f5b-8e85-8dc06f8a22c3_1615739992609_353075938260911200.pdf</a><br>Content-Length: 105<br>Server: Werkzeug/1.0.1 Python/3.8.8<br>Date: Sun, 14 Mar 2021 16:39:57 GMT</pre>
+<pre>{&quot;pdfUrl&quot;:&quot;https://dummyS3Url/3c8e8e4c-f7b4-4f5b-8e85-8dc06f8a22c3_1615739992609_353075938260911200.pdf&quot;}</pre>
+<h3>Deploy on AWS:</h3>
+<p>You can use sam deploy --guided to deploy the Lambda.<br>If you use Github as your repo, then you can build and
+    deploy using Github Actions which was covered above.<br>For the CI/CD deploy to work, you need to have the
+    samconfig.toml file with appropriate values. Refer to the one in my <a
+        href="https://github.com/GSSwain/html-to-pdf-generator-puppeteer-aws-lambda">repo</a>.</p>
+<h3>Test the deployed solution</h3>
+<p>If you have deployed this to your AWS account, you must pass the api key in the headers. You need to go the AWS
+    CloudFormation stack and then to the resources. Go to the ApiKey resource and then click show.</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*bLWB5IFXIPj74mbE0fXAuA.png" /></figure>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*r5AnkOsy6ODVzjAWxciC6Q.png" /></figure>
+<p>You can get the URL of the API in the Output section of the AWS CloudFormation Stack.</p>
+<p>Now you can test the API deployed on AWS with the following request.</p>
+<h4>Sample Request:</h4>
+<pre>curl -i -X POST \<br>  <a href="https://lote3qjqz8.execute-api.ap-southeast-2.amazonaws.com/Prod/generate-pdf/">https://&lt;YOUR-API-ID&gt;.execute-api.ap-southeast-2.amazonaws.com/Prod/generate-pdf/</a> \<br>  -H &#39;cache-control: no-cache&#39; \<br>  -H &#39;content-type: application/json&#39; \<br>  -H &#39;x-api-key: &lt;YOUR-API-KEY_GOES_HERE&gt;&#39; \<br>  -d &#39;{<br> &quot;url&quot;: &quot;<a href="https://gsswain.com/print-sample/">https://gsswain.com/print-sample/</a>&quot;<br>}&#39;</pre>
+<h4>Sample Response:</h4>
+<pre>HTTP/2 201<br>content-type: application/json<br>content-length: 171<br>location: &lt;GENERATED_PDF_URL&gt;<br>date: Sun, 14 Mar 2021 15:26:36 GMT<br>x-amzn-requestid: 8aa9cd12-aaa9-4628-96db-e2d7b952feb5<br>access-control-allow-origin: <a href="https://gsswain.com">https://gsswain.com</a><br>x-amz-apigw-id: cLuuTFlYSwMF5dw=<br>x-amzn-trace-id: Root=1-604e2b28-1cff94e27f34e4e35ec1a6e8;Sampled=0<br></pre>
+<pre>{&quot;pdfUrl&quot;:&quot;&lt;GENERATED_PDF_URL&gt;&quot;}</pre>
+<p>Copy the pdfUrl value returned in the response and open in a browser and you should see the PDF version of the page.
+    Check the tags and metadata in the S3 bucket.</p>
+<p><strong><em>Note:</em></strong> You can’t access all the objects in the bucket unless you know the bucket key for all
+    of them. Also if you upload directly to S3 without the tag public=yes, they can’t be accessed even if you know the
+    bucket key. With that we have covered a lot of ground and finally tested our lambda on AWS as well.</p>
+<h3>Cleanup:</h3>
+<p>After you have done your testing delete all the resources</p>
+<h4>Delete all objects in S3 bucket</h4>
+<p>aws s3 rm s3://&lt;your-s3-bucket-name&gt; --recursive</p>
+<h4>Delete the CloudFormation Stack</h4>
+<p>aws cloudformation delete-stack --stack-name &lt;name-of-your-cfn-stack&gt;</p>
+<h3>Summary:</h3>
+<p>I hope you learnt a little something and you can use this solution somewhere on production 😊. This is half the
+    story. Ideally you would like to have an API which would take a templateId, <strong><em>some data for the template
+        </em></strong>and generate a PDF with that. This code example generates a PDF, given a URL. You can easily build
+    upon this to support templates. If you are having any issues with Puppeteer<em> </em>while<em> </em>deploying this
+    solution to some other platform, please go through the troubleshooting guide <a
+        href="https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md">here</a>.</p>
+<p><strong><em>Note:</em> </strong>There is at least two sides to everything.<strong> </strong>Lambda <strong>is not a
+        silver bullet</strong> and you should have some expert opinion before using them for your use case. This
+    solution would work best when your target is high throughput rather than low latency. I have intentionally kept the
+    ReserverConcurrentExecutions to 1 in the SAM template. Play around the <em>Memory, Concurrency</em> mode for your
+    use case. If you need help do reach out to me.</p>
+<h3>References:</h3>
+<ul>
+    <li><a href="https://developers.google.com/web/tools/puppeteer">Puppeteer</a></li>
+    <li><a href="https://nodejs.org/en/blog/release/v14.0.0/">NodeJS 14</a></li>
+    <li><a href="https://aws.amazon.com/lambda/">AWS Lambda</a></li>
+    <li><a href="https://aws.amazon.com/serverless/sam/">AWS SAM</a></li>
+    <li><a href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html">AWS Lambda Layer</a></li>
+    <li><a href="https://aws.amazon.com/blogs/compute/working-with-aws-lambda-and-lambda-layers-in-aws-sam/">AWS Lambda
+            Layer with SAM</a></li>
+    <li><a href="https://aws.amazon.com/cli/">AWS CLI</a></li>
+    <li><a href="https://docs.github.com/en/actions">Github Actions</a></li>
+    <li><a href="https://babeljs.io/docs/en/">Babel</a></li>
+    <li><a href="https://localstack.cloud/#intro">LocalStack</a></li>
+</ul><img src="https://medium.com/_/stat?event=post.clientViewed&referrerSource=full_rss&postId=2f295a23cb6d" width="1"
+    height="1" alt="">
