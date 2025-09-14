@@ -8,6 +8,7 @@ gem "kramdown", "2.4.0"
 # Default theme for new Jekyll sites
 gem "minima"
 
+gem "html-proofer"
 
 # Plugins
 group :jekyll_plugins do
