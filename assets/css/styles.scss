@@ -45,6 +45,10 @@ body {
   background-color: var(--bg-primary);
 }
 
+ul, ol {
+list-style-type: none;
+}
+
 .container {
   max-width: var(--container-width);
   margin: 0 auto;
