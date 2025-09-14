@@ -1,0 +1,78 @@
+# Site settings
+title: Girija Swain
+subtitle: Digital Transformation Specialist
+email: contact@gsswain.com
+description: >-
+  15+ years of experience solving complex business problems through innovative 
+  technology solutions and exceptional leadership. Specializing in cloud-native 
+  architectures, microservices, and leading high-performing engineering teams.
+baseurl: "" # the subpath of your site, e.g. /blog
+url: "https://gsswain.com" # the base hostname & protocol for your site
+github_username: gsswain
+linkedin_username: gsswain
+stackoverflow_id: 4601120
+
+# Build settings
+markdown: kramdown
+highlighter: rouge
+theme: minima
+plugins:
+  - jekyll-feed
+  - jekyll-sitemap
+  - jekyll-seo-tag
+  - jekyll-paginate
+  - jekyll-gist
+
+
+# Google Analytics
+google_analytics: G-NK9JKFXRK7
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - README.md
+
+# Collections
+collections:
+  case_studies:
+    output: true
+    permalink: /:collection/:name/
+
+# Navigation
+navigation:
+  - title: Home
+    url: /
+  - title: About
+    url: /about/
+  # - title: Experience
+  #   url: /experience/
+  - title: Case Studies
+    url: /case-studies/
+  - title: Blog
+    url: /blog/
+  - title: Contact
+    url: /contact/
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+      author: "Girija Swain"
+  - scope:
+      path: ""
+      type: "case_studies"
+    values:
+      layout: "case_study"
+
+# Pagination
+paginate: 5
+paginate_path: "/blog/page:num/"
