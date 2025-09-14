@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="{{ page.lang | default: site.lang | default: "en" }}">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  {% seo %}
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+  <link rel="stylesheet" href="{{ "/assets/css/styles.css" | relative_url }}">
+  <link rel="canonical" href="{{ page.url | replace:'index.html','' | absolute_url }}">
+  <link rel="alternate" type="application/rss+xml" title="{{ site.title | escape }}" href="{{ "/feed.xml" | relative_url }}">
+  
+  <!-- Google Analytics -->
+  {% if site.google_analytics %}
+  <script async src="https://www.googletagmanager.com/gtag/js?id={{ site.google_analytics }}"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '{{ site.google_analytics }}');
+  </script>
+  {% endif %}
+
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="container">
+      <nav class="site-nav">
+        <div class="nav-brand">
+          <a class="site-title" href="{{ "/" | relative_url }}">
+            {{ site.title | escape }}
+          </a>
+          <!-- <p class="site-tagline">{{ site.subtitle | escape }}</p> -->
+        </div>
+        
+        <div class="nav-menu">
+          <ul class="nav-links">
+            {% for item in site.navigation %}
+            <li class="nav-item">
+              <a href="{{ item.url | relative_url }}" 
+                 class="nav-link{% if page.url == item.url %} active{% endif %}">
+                {{ item.title }}
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+          
+          <div class="nav-social">
+            <a href="https://linkedin.com/in/{{ site.linkedin_username }}" target="_blank" rel="noopener">
+              <i class="fab fa-linkedin"></i>
+            </a>
+            <a href="https://github.com/{{ site.github_username }}" target="_blank" rel="noopener">
+              <i class="fab fa-github"></i>
+            </a>
+            <a href="https://stackoverflow.com/users/{{ site.stackoverflow_id }}/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-stack-overflow"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div class="nav-toggle">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-content">
+    {{ content }}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>Girija Swain</h3>
+          <div class="footer-social">
+            <a href="https://linkedin.com/in/{{ site.linkedin_username }}" target="_blank" rel="noopener">
+              <i class="fab fa-linkedin"></i>
+            </a>
+            <a href="https://github.com/{{ site.github_username }}" target="_blank" rel="noopener">
+              <i class="fab fa-github"></i>
+            </a>
+            <a href="https://stackoverflow.com/users/{{ site.stackoverflow_id }}/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-stack-overflow"></i>
+            </a>
+            <a href="mailto:{{ site.email }}">
+              <i class="fas fa-envelope"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="/about/">About</a></li>
+            <li><a href="/case-studies/">Case Studies</a></li>
+            <li><a href="/blog/">Blog</a></li>
+            <li><a href="/contact/">Contact</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Expertise</h4>
+          <ul>
+            <li>Digital Transformation</li>
+            <li>Technology Leadership</li>
+            <li>Cloud Architecture</li>
+            <li>Microservices</li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Recognition</h4>
+          <ul>
+            <li>Top 7% Stack Overflow</li>
+            <li>GCP Professional Architect</li>
+            <li>AWS Solutions Architect</li>
+            <li>15+ Years Experience</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; {{ 'now' | date: "%Y" }} {{ site.title }}. All rights reserved.</p>
+        <p>Built with Jekyll • Hosted on GitHub Pages</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{{ "/assets/js/main.js" | relative_url }}"></script>
+</body>
+</html>
