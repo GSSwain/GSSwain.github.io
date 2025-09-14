@@ -1,12 +1,12 @@
 source "https://rubygems.org"
 
 # Jekyll version
-gem "jekyll", "3.10.0"
+gem "jekyll"
 
 gem "kramdown", "2.4.0"
 
 # Default theme for new Jekyll sites
-gem "minima", "2.5.1"
+gem "minima"
 
 
 # Plugins
@@ -16,6 +16,7 @@ group :jekyll_plugins do
   gem "jekyll-seo-tag"
   gem "jekyll-paginate"
   gem "jekyll-gist"
+  gem "github-pages"
 end
 
 # Windows and JRuby does not include zoneinfo files
@@ -30,6 +31,3 @@ gem "wdm", "~> 0.1.1", :platforms => [:mingw, :x64_mingw, :mswin]
 # Lock `http_parser.rb` gem to `v0.6.x` on JRuby builds since newer versions of the gem
 # do not have a Java counterpart.
 gem "http_parser.rb", "~> 0.6.0", :platforms => [:jruby]
-
-# GitHub Pages compatibility
-gem "github-pages", "232", group: :jekyll_plugins
