@@ -1052,3 +1052,34 @@ tr { vertical-align: baseline;}
     }
   }
 }
+
+.about-intro {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    color: #444;
+}
+
+.about-what-i-do {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border-radius: 4px;
+  border-left: 4px solid #0066cc;
+}
+
+.about-quote {
+  margin-bottom: 2rem;
+  color: #555;
+  font-style: italic;
+}
+
+.about-links {
+  margin-top: 2rem;
+}
+
+.about-links a {
+  color: #0066cc;
+  text-decoration: none;
+  margin-right: 1.5rem;
+  font-weight: 600;
+}
