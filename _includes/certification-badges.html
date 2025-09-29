@@ -1,0 +1,9 @@
+<div class="certification-badges">
+  {% for badge in site.data.certification.badges %}
+    <div class="badge">
+      <a href="{{ badge.url }}" target="_blank" rel="noopener" title="{{ badge.name }}">
+        <img src="{{ badge.image }}" alt="{{ badge.name }}" loading="lazy" />
+      </a>
+    </div>
+  {% endfor %}
+</div>
