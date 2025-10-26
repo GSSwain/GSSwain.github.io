@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>REST + GraphQL (beyond BFFs) | Girija Swain</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="REST + GraphQL (beyond BFFs)" />
+<meta name="author" content="Girija Swain" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="In this post, we start with a brief introduction to GraphQL and its common industry accepted usage pattern as BFFs(Backends For Frontends). Can it be used beyond that? I would focus around the below questions What is GraphQL?Do I need to use GraphQL?Can GraphQL be used beyond Backends For Frontends(BFFs)? Basic knowledge of REST is a prerequisite for understanding the concepts in this post. What is GraphQL? GraphQL is a query language for APIs and a runtime for fulfilling those queries with your existing data. So there are 2 components to this. A GraphQL server and a GraphQL client. Both of them talk to each other using GrpahQL query language. GraphQL is transport agnostic and works well over HTTP. The client sends a GraphQL query, the server understands what the client has asked it to do and process the request and sends the response. In the REST world, we all know what CRUD (Create, Read, Update, Delete) stands for and how it works. In the GraphQL world, the reads are Queries and the writes are Mutations. That&#39;s it 😊 History: Facebook’s mobile apps have been powered by GraphQL since 2012. A GraphQL spec was open sourced in 2015. Schema: GraphQL has a Schema, which consists of Query (for read operations) and Mutation (for write operations) with it’s own type definitions. schema { query: Query mutation: Mutation} Query: Queries are used for read operations. Let’ take a simple example in the context of Facebook. A facebook user can log in and see multiple posts from their friends with a certain number of comments. An illustrative GraphQL type definition in this case may look something like this type Query { posts: [Post] # This query fetches list of Posts ... # Other query definitions} type Post { id: ID! # Id of the post at: String! # Time at which it was Posted caption: String! # Caption of the post mediaUrl: String # Url to the image or video shared location: String # Location of the post comments: [Comment] # Comments on the post of type Comment ... # Other properties definition of a post} type Comment { id: ID! # Id of the comment comment: String! # The text of the comment at: String! # Time at which it was Commented by: String! # The user who made the comment ... # Other properties definition of a Comment } Sample GraphQL Query: A sample query to fetch posts with comments for each post would look like the following query { posts { id at caption mediaUrl location comments { id comment at by } }} If you look at the above query, we only ask for the required fields and nothing more for the posts as well as the comments for each post. There could be more fields both for posts and comments, which we don&#39;t need and they are not part of the response as well. Sample GraphQL Response Here is a sample response for the above mentioned query. Notice the top level key is &quot;data&quot; followed by the query name which is &quot;posts&quot; in this case. { &quot;data&quot;: { &quot;posts&quot;: [ { &quot;id&quot;: &quot;some-uuid&quot;, &quot;at&quot;: &quot;2020-07-26T16:10:57.076+0000&quot;, &quot;caption&quot;: &quot;My latest post!!&quot;, &quot;mediaUrl&quot;: &quot;http://somecdn/some-image.jpg&quot;, &quot;location&quot;: &quot;Pune, India&quot;, &quot;comments&quot;: [ { &quot;id&quot;: &quot;some-uuid&quot;, &quot;comment&quot;: &quot;Wow, what a place!!&quot;, &quot;at&quot;: &quot;2020-07-26T16:11:05.010+0000&quot;, &quot;by&quot;: &quot;Mahesh&quot; }, { &quot;id&quot;: &quot;some-uuid&quot;, &quot;comment&quot;: &quot;I have been there too!&quot;, &quot;at&quot;: &quot;2020-07-26T17:01:30.015+0000&quot;, &quot;by&quot;: &quot;Neeta&quot; } ] }, ... // more posts in similar format ] }} Sample GraphQL Error Response In case of any error, the response would have a list of errors and the response would look something like this: { &quot;errors&quot;: [ { &quot;errorType&quot;: &quot;SomeException&quot;, &quot;message&quot;: &quot;Some Error Message&quot; } ]} Mutation: Mutations are used for write operations. Again, in the context of Facebook, an user can share posts, like posts, add comments, delete comments etc. So the type definition for the mutations may look something like this: type Mutation { sharePost(post: Post!): Post likePost(post: Post!): Post addComment(postId: ID!, comment: Comment): Comment deleteComment(commentId: ID!): Comment} We won&#39;t cover examples for the Mutations here, but I would add URLs in the references section. Do I need to use GraphQL? GraphQL provides a complete and understandable description of the data in your API, gives clients the power to ask for exactly what they need and nothing more, makes it easier to evolve APIs over time, and enables powerful developer tools. GraphQL has been a popular choice for building Backends For Frontends(BFFs), where one needs to aggregate data from multiple data sources to be consumed by their various clients like Web Browsers on Mobile devices, Android App, iOS App, Web Browsers on Desktops/Laptops etc. The data required for each of the client(Desktop, Laptop, Mobile) would vary based on the amount of data they can display based on display size of the device. We can create a BFF layer for each type of client or use something like GraphQL which allows the client to ask for exactly what it needs. A picture is a worth thousand words. Let&#39;s add a few thousands 😉 BFF without GraphQL In this case, all the communication happens using REST and each client has it&#39;’s own BFF layer i.e. one for Web browser, one for Android, one for iOS etc. BFF with GraphQL exposed to clients Here the clients are GraphQL aware and they talk to the API using GraphQL. The GraphQL server talks to the microservices using REST. One can very well have multiple GraphQL endpoints dedicated for a consumer i.e. you can still have separate GraphQL BFF for Web, Android, iOS etc. Would the duplication of Schema add value? BFF with GraphQL working behind the scenes In this case, we use GraphQL to aggregate the microservices apis but the clients still talk using REST. The clients are not aware of GraphQL and they need not make any change. The GraphQL server still talks to the microservices using REST. In this case also, you can have multiple BFFs for each device and each talking to multiple GraphQL APIs behind the scenes So do I really need GraphQL? Based on your service clients (if they are internal i.e. a customer service portal, external i.e. a self service portal or an external business to business customer), who controls their source code and the confidence you have on GraphQL, you would fall in one of the above categories for your BFF implementation. If you are not already using GraphQL, give it a try and discover for yourself, if the trade-offs are worth it. Can GraphQL be used beyond Backends For Frontends(BFFs)? We know for sure, GraphQL can be helpful for BFFs but can it go beyond that. Let&#39;’s see if we can use GraphQL for server-to-server communication. GraphQL everywhere In this case, you may still have an aggregator GraphQL API which can aggregate the GraphQL schema of multiple microservices and give you a Graph of your entire business model. The aggregator GraphQL server talks to the microservices using GraphQL instead of REST. The microservices also talk to each other using GraphQL. As per Apollo, Appollo Federation is an answer to implementing GraphQL in a microservice architecture. GraphQL and REST You may have some clients where you can&#39;t force them to use GraphQL. So probably you would still have to use REST. Say you are going for GraphQL everywhere, even then, during the transition you may need to support both REST and GraphQL. Let&#39;’s see how it looks GraphQL for Reads and REST for writes One of the possibility is to use GraphQL only for read operations (This is where GraphQL brings a lot of value). The write operations can still be REST. In someway this may look like CQRS working in 2 different protocols for Commands(REST) and Queries (GraphQL). In the world where everyone is making a move towards Serverless architectures, achieving something like this is not very difficult either. Now the real question, is this worth it? Conclusion There are more possible ways of using GraphQL for server to server communication, which is not covered here. At the moment, I have used GraphQL for a very limited server to server communication and like the power it brings. I&#39;m considering to go for GraphQL for READ (within the microservices as well) and still use REST for WRITE. I would like to hear your feedback. Have you have taken this route? Have you successfully used GraphQL beyond BFFs? References REST (Martin Fowler)GraphQLGraphQL MutationsBackends For Frontends (Phil Calçado)Backends For Frontends (Sam Newman)CQRS (Martin Fowler)Appollo Federation" />
+<meta property="og:description" content="In this post, we start with a brief introduction to GraphQL and its common industry accepted usage pattern as BFFs(Backends For Frontends). Can it be used beyond that? I would focus around the below questions What is GraphQL?Do I need to use GraphQL?Can GraphQL be used beyond Backends For Frontends(BFFs)? Basic knowledge of REST is a prerequisite for understanding the concepts in this post. What is GraphQL? GraphQL is a query language for APIs and a runtime for fulfilling those queries with your existing data. So there are 2 components to this. A GraphQL server and a GraphQL client. Both of them talk to each other using GrpahQL query language. GraphQL is transport agnostic and works well over HTTP. The client sends a GraphQL query, the server understands what the client has asked it to do and process the request and sends the response. In the REST world, we all know what CRUD (Create, Read, Update, Delete) stands for and how it works. In the GraphQL world, the reads are Queries and the writes are Mutations. That&#39;s it 😊 History: Facebook’s mobile apps have been powered by GraphQL since 2012. A GraphQL spec was open sourced in 2015. Schema: GraphQL has a Schema, which consists of Query (for read operations) and Mutation (for write operations) with it’s own type definitions. schema { query: Query mutation: Mutation} Query: Queries are used for read operations. Let’ take a simple example in the context of Facebook. A facebook user can log in and see multiple posts from their friends with a certain number of comments. An illustrative GraphQL type definition in this case may look something like this type Query { posts: [Post] # This query fetches list of Posts ... # Other query definitions} type Post { id: ID! # Id of the post at: String! # Time at which it was Posted caption: String! # Caption of the post mediaUrl: String # Url to the image or video shared location: String # Location of the post comments: [Comment] # Comments on the post of type Comment ... # Other properties definition of a post} type Comment { id: ID! # Id of the comment comment: String! # The text of the comment at: String! # Time at which it was Commented by: String! # The user who made the comment ... # Other properties definition of a Comment } Sample GraphQL Query: A sample query to fetch posts with comments for each post would look like the following query { posts { id at caption mediaUrl location comments { id comment at by } }} If you look at the above query, we only ask for the required fields and nothing more for the posts as well as the comments for each post. There could be more fields both for posts and comments, which we don&#39;t need and they are not part of the response as well. Sample GraphQL Response Here is a sample response for the above mentioned query. Notice the top level key is &quot;data&quot; followed by the query name which is &quot;posts&quot; in this case. { &quot;data&quot;: { &quot;posts&quot;: [ { &quot;id&quot;: &quot;some-uuid&quot;, &quot;at&quot;: &quot;2020-07-26T16:10:57.076+0000&quot;, &quot;caption&quot;: &quot;My latest post!!&quot;, &quot;mediaUrl&quot;: &quot;http://somecdn/some-image.jpg&quot;, &quot;location&quot;: &quot;Pune, India&quot;, &quot;comments&quot;: [ { &quot;id&quot;: &quot;some-uuid&quot;, &quot;comment&quot;: &quot;Wow, what a place!!&quot;, &quot;at&quot;: &quot;2020-07-26T16:11:05.010+0000&quot;, &quot;by&quot;: &quot;Mahesh&quot; }, { &quot;id&quot;: &quot;some-uuid&quot;, &quot;comment&quot;: &quot;I have been there too!&quot;, &quot;at&quot;: &quot;2020-07-26T17:01:30.015+0000&quot;, &quot;by&quot;: &quot;Neeta&quot; } ] }, ... // more posts in similar format ] }} Sample GraphQL Error Response In case of any error, the response would have a list of errors and the response would look something like this: { &quot;errors&quot;: [ { &quot;errorType&quot;: &quot;SomeException&quot;, &quot;message&quot;: &quot;Some Error Message&quot; } ]} Mutation: Mutations are used for write operations. Again, in the context of Facebook, an user can share posts, like posts, add comments, delete comments etc. So the type definition for the mutations may look something like this: type Mutation { sharePost(post: Post!): Post likePost(post: Post!): Post addComment(postId: ID!, comment: Comment): Comment deleteComment(commentId: ID!): Comment} We won&#39;t cover examples for the Mutations here, but I would add URLs in the references section. Do I need to use GraphQL? GraphQL provides a complete and understandable description of the data in your API, gives clients the power to ask for exactly what they need and nothing more, makes it easier to evolve APIs over time, and enables powerful developer tools. GraphQL has been a popular choice for building Backends For Frontends(BFFs), where one needs to aggregate data from multiple data sources to be consumed by their various clients like Web Browsers on Mobile devices, Android App, iOS App, Web Browsers on Desktops/Laptops etc. The data required for each of the client(Desktop, Laptop, Mobile) would vary based on the amount of data they can display based on display size of the device. We can create a BFF layer for each type of client or use something like GraphQL which allows the client to ask for exactly what it needs. A picture is a worth thousand words. Let&#39;s add a few thousands 😉 BFF without GraphQL In this case, all the communication happens using REST and each client has it&#39;’s own BFF layer i.e. one for Web browser, one for Android, one for iOS etc. BFF with GraphQL exposed to clients Here the clients are GraphQL aware and they talk to the API using GraphQL. The GraphQL server talks to the microservices using REST. One can very well have multiple GraphQL endpoints dedicated for a consumer i.e. you can still have separate GraphQL BFF for Web, Android, iOS etc. Would the duplication of Schema add value? BFF with GraphQL working behind the scenes In this case, we use GraphQL to aggregate the microservices apis but the clients still talk using REST. The clients are not aware of GraphQL and they need not make any change. The GraphQL server still talks to the microservices using REST. In this case also, you can have multiple BFFs for each device and each talking to multiple GraphQL APIs behind the scenes So do I really need GraphQL? Based on your service clients (if they are internal i.e. a customer service portal, external i.e. a self service portal or an external business to business customer), who controls their source code and the confidence you have on GraphQL, you would fall in one of the above categories for your BFF implementation. If you are not already using GraphQL, give it a try and discover for yourself, if the trade-offs are worth it. Can GraphQL be used beyond Backends For Frontends(BFFs)? We know for sure, GraphQL can be helpful for BFFs but can it go beyond that. Let&#39;’s see if we can use GraphQL for server-to-server communication. GraphQL everywhere In this case, you may still have an aggregator GraphQL API which can aggregate the GraphQL schema of multiple microservices and give you a Graph of your entire business model. The aggregator GraphQL server talks to the microservices using GraphQL instead of REST. The microservices also talk to each other using GraphQL. As per Apollo, Appollo Federation is an answer to implementing GraphQL in a microservice architecture. GraphQL and REST You may have some clients where you can&#39;t force them to use GraphQL. So probably you would still have to use REST. Say you are going for GraphQL everywhere, even then, during the transition you may need to support both REST and GraphQL. Let&#39;’s see how it looks GraphQL for Reads and REST for writes One of the possibility is to use GraphQL only for read operations (This is where GraphQL brings a lot of value). The write operations can still be REST. In someway this may look like CQRS working in 2 different protocols for Commands(REST) and Queries (GraphQL). In the world where everyone is making a move towards Serverless architectures, achieving something like this is not very difficult either. Now the real question, is this worth it? Conclusion There are more possible ways of using GraphQL for server to server communication, which is not covered here. At the moment, I have used GraphQL for a very limited server to server communication and like the power it brings. I&#39;m considering to go for GraphQL for READ (within the microservices as well) and still use REST for WRITE. I would like to hear your feedback. Have you have taken this route? Have you successfully used GraphQL beyond BFFs? References REST (Martin Fowler)GraphQLGraphQL MutationsBackends For Frontends (Phil Calçado)Backends For Frontends (Sam Newman)CQRS (Martin Fowler)Appollo Federation" />
+<link rel="canonical" href="https://gsswain.com/2020/07/28/rest-graphql-beyond-bffs.html" />
+<meta property="og:url" content="https://gsswain.com/2020/07/28/rest-graphql-beyond-bffs.html" />
+<meta property="og:site_name" content="Girija Swain" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-07-28T00:00:00+00:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="REST + GraphQL (beyond BFFs)" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Girija Swain"},"dateModified":"2020-07-28T00:00:00+00:00","datePublished":"2020-07-28T00:00:00+00:00","description":"In this post, we start with a brief introduction to GraphQL and its common industry accepted usage pattern as BFFs(Backends For Frontends). Can it be used beyond that? I would focus around the below questions What is GraphQL?Do I need to use GraphQL?Can GraphQL be used beyond Backends For Frontends(BFFs)? Basic knowledge of REST is a prerequisite for understanding the concepts in this post. What is GraphQL? GraphQL is a query language for APIs and a runtime for fulfilling those queries with your existing data. So there are 2 components to this. A GraphQL server and a GraphQL client. Both of them talk to each other using GrpahQL query language. GraphQL is transport agnostic and works well over HTTP. The client sends a GraphQL query, the server understands what the client has asked it to do and process the request and sends the response. In the REST world, we all know what CRUD (Create, Read, Update, Delete) stands for and how it works. In the GraphQL world, the reads are Queries and the writes are Mutations. That&#39;s it 😊 History: Facebook’s mobile apps have been powered by GraphQL since 2012. A GraphQL spec was open sourced in 2015. Schema: GraphQL has a Schema, which consists of Query (for read operations) and Mutation (for write operations) with it’s own type definitions. schema { query: Query mutation: Mutation} Query: Queries are used for read operations. Let’ take a simple example in the context of Facebook. A facebook user can log in and see multiple posts from their friends with a certain number of comments. An illustrative GraphQL type definition in this case may look something like this type Query { posts: [Post] # This query fetches list of Posts ... # Other query definitions} type Post { id: ID! # Id of the post at: String! # Time at which it was Posted caption: String! # Caption of the post mediaUrl: String # Url to the image or video shared location: String # Location of the post comments: [Comment] # Comments on the post of type Comment ... # Other properties definition of a post} type Comment { id: ID! # Id of the comment comment: String! # The text of the comment at: String! # Time at which it was Commented by: String! # The user who made the comment ... # Other properties definition of a Comment } Sample GraphQL Query: A sample query to fetch posts with comments for each post would look like the following query { posts { id at caption mediaUrl location comments { id comment at by } }} If you look at the above query, we only ask for the required fields and nothing more for the posts as well as the comments for each post. There could be more fields both for posts and comments, which we don&#39;t need and they are not part of the response as well. Sample GraphQL Response Here is a sample response for the above mentioned query. Notice the top level key is &quot;data&quot; followed by the query name which is &quot;posts&quot; in this case. { &quot;data&quot;: { &quot;posts&quot;: [ { &quot;id&quot;: &quot;some-uuid&quot;, &quot;at&quot;: &quot;2020-07-26T16:10:57.076+0000&quot;, &quot;caption&quot;: &quot;My latest post!!&quot;, &quot;mediaUrl&quot;: &quot;http://somecdn/some-image.jpg&quot;, &quot;location&quot;: &quot;Pune, India&quot;, &quot;comments&quot;: [ { &quot;id&quot;: &quot;some-uuid&quot;, &quot;comment&quot;: &quot;Wow, what a place!!&quot;, &quot;at&quot;: &quot;2020-07-26T16:11:05.010+0000&quot;, &quot;by&quot;: &quot;Mahesh&quot; }, { &quot;id&quot;: &quot;some-uuid&quot;, &quot;comment&quot;: &quot;I have been there too!&quot;, &quot;at&quot;: &quot;2020-07-26T17:01:30.015+0000&quot;, &quot;by&quot;: &quot;Neeta&quot; } ] }, ... // more posts in similar format ] }} Sample GraphQL Error Response In case of any error, the response would have a list of errors and the response would look something like this: { &quot;errors&quot;: [ { &quot;errorType&quot;: &quot;SomeException&quot;, &quot;message&quot;: &quot;Some Error Message&quot; } ]} Mutation: Mutations are used for write operations. Again, in the context of Facebook, an user can share posts, like posts, add comments, delete comments etc. So the type definition for the mutations may look something like this: type Mutation { sharePost(post: Post!): Post likePost(post: Post!): Post addComment(postId: ID!, comment: Comment): Comment deleteComment(commentId: ID!): Comment} We won&#39;t cover examples for the Mutations here, but I would add URLs in the references section. Do I need to use GraphQL? GraphQL provides a complete and understandable description of the data in your API, gives clients the power to ask for exactly what they need and nothing more, makes it easier to evolve APIs over time, and enables powerful developer tools. GraphQL has been a popular choice for building Backends For Frontends(BFFs), where one needs to aggregate data from multiple data sources to be consumed by their various clients like Web Browsers on Mobile devices, Android App, iOS App, Web Browsers on Desktops/Laptops etc. The data required for each of the client(Desktop, Laptop, Mobile) would vary based on the amount of data they can display based on display size of the device. We can create a BFF layer for each type of client or use something like GraphQL which allows the client to ask for exactly what it needs. A picture is a worth thousand words. Let&#39;s add a few thousands 😉 BFF without GraphQL In this case, all the communication happens using REST and each client has it&#39;’s own BFF layer i.e. one for Web browser, one for Android, one for iOS etc. BFF with GraphQL exposed to clients Here the clients are GraphQL aware and they talk to the API using GraphQL. The GraphQL server talks to the microservices using REST. One can very well have multiple GraphQL endpoints dedicated for a consumer i.e. you can still have separate GraphQL BFF for Web, Android, iOS etc. Would the duplication of Schema add value? BFF with GraphQL working behind the scenes In this case, we use GraphQL to aggregate the microservices apis but the clients still talk using REST. The clients are not aware of GraphQL and they need not make any change. The GraphQL server still talks to the microservices using REST. In this case also, you can have multiple BFFs for each device and each talking to multiple GraphQL APIs behind the scenes So do I really need GraphQL? Based on your service clients (if they are internal i.e. a customer service portal, external i.e. a self service portal or an external business to business customer), who controls their source code and the confidence you have on GraphQL, you would fall in one of the above categories for your BFF implementation. If you are not already using GraphQL, give it a try and discover for yourself, if the trade-offs are worth it. Can GraphQL be used beyond Backends For Frontends(BFFs)? We know for sure, GraphQL can be helpful for BFFs but can it go beyond that. Let&#39;’s see if we can use GraphQL for server-to-server communication. GraphQL everywhere In this case, you may still have an aggregator GraphQL API which can aggregate the GraphQL schema of multiple microservices and give you a Graph of your entire business model. The aggregator GraphQL server talks to the microservices using GraphQL instead of REST. The microservices also talk to each other using GraphQL. As per Apollo, Appollo Federation is an answer to implementing GraphQL in a microservice architecture. GraphQL and REST You may have some clients where you can&#39;t force them to use GraphQL. So probably you would still have to use REST. Say you are going for GraphQL everywhere, even then, during the transition you may need to support both REST and GraphQL. Let&#39;’s see how it looks GraphQL for Reads and REST for writes One of the possibility is to use GraphQL only for read operations (This is where GraphQL brings a lot of value). The write operations can still be REST. In someway this may look like CQRS working in 2 different protocols for Commands(REST) and Queries (GraphQL). In the world where everyone is making a move towards Serverless architectures, achieving something like this is not very difficult either. Now the real question, is this worth it? Conclusion There are more possible ways of using GraphQL for server to server communication, which is not covered here. At the moment, I have used GraphQL for a very limited server to server communication and like the power it brings. I&#39;m considering to go for GraphQL for READ (within the microservices as well) and still use REST for WRITE. I would like to hear your feedback. Have you have taken this route? Have you successfully used GraphQL beyond BFFs? References REST (Martin Fowler)GraphQLGraphQL MutationsBackends For Frontends (Phil Calçado)Backends For Frontends (Sam Newman)CQRS (Martin Fowler)Appollo Federation","headline":"REST + GraphQL (beyond BFFs)","mainEntityOfPage":{"@type":"WebPage","@id":"https://gsswain.com/2020/07/28/rest-graphql-beyond-bffs.html"},"url":"https://gsswain.com/2020/07/28/rest-graphql-beyond-bffs.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <link rel="canonical" href="https://gsswain.com/2020/07/28/rest-graphql-beyond-bffs.html">
+  <link rel="alternate" type="application/rss+xml" title="Girija Swain" href="/feed.xml">
+  
+  <!-- Google Analytics -->
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NK9JKFXRK7"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-NK9JKFXRK7');
+  </script>
+  
+
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="container">
+      <nav class="site-nav">
+        <div class="nav-brand">
+          <a class="site-title" href="/">
+            Girija Swain
+          </a>
+          <!-- <p class="site-tagline">Digital Transformation Specialist</p> -->
+        </div>
+        
+        <div class="nav-menu">
+          <ul class="nav-links">
+            
+            <li class="nav-item">
+              <a href="/" 
+                 class="nav-link">
+                Home
+              </a>
+            </li>
+            
+            <li class="nav-item">
+              <a href="/about/" 
+                 class="nav-link">
+                About
+              </a>
+            </li>
+            
+            <li class="nav-item">
+              <a href="/case-studies/" 
+                 class="nav-link">
+                Case Studies
+              </a>
+            </li>
+            
+            <li class="nav-item">
+              <a href="/blog/" 
+                 class="nav-link">
+                Blog
+              </a>
+            </li>
+            
+            <li class="nav-item">
+              <a href="/contact/" 
+                 class="nav-link">
+                Contact
+              </a>
+            </li>
+            
+          </ul>
+          
+          <div class="nav-social">
+            <a href="https://linkedin.com/in/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-linkedin"></i>
+            </a>
+            <a href="https://github.com/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-github"></i>
+            </a>
+            <a href="https://stackoverflow.com/users/4601120/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-stack-overflow"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div class="nav-toggle">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <div class="container">
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">REST + GraphQL (beyond BFFs)</h1>
+      <div class="post-meta">
+        <time datetime="2020-07-28T00:00:00+00:00">
+          July 28, 2020
+        </time>
+        
+        <span class="post-author">by Girija Swain</span>
+        
+        
+        <div class="post-tags">
+          
+          <span class="tag">graphql</span>
+          
+          <span class="tag">backends-for-frontends</span>
+          
+          <span class="tag">rest</span>
+          
+          <span class="tag">server-to-server</span>
+          
+        </div>
+        
+      </div>
+    </header>
+
+    <div class="post-content">
+      <figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*OTe9AFXves6mRZIroTpdCQ.png" /></figure><p>In this post, we start with a brief introduction to GraphQL and its common industry accepted usage pattern as BFFs(Backends For Frontends). Can it be used beyond that? I would focus around the below questions</p><ul><li>What is GraphQL?</li><li>Do I need to use GraphQL?</li><li>Can GraphQL be used beyond Backends For Frontends(BFFs)?</li></ul><p><em>Basic knowledge of REST is a prerequisite for understanding the concepts in this post.</em></p><h3>What is GraphQL?</h3><p>GraphQL is a <strong>query language for APIs</strong> and a <strong>runtime for fulfilling those queries with your existing data</strong>. So there are 2 components to this. A <strong>GraphQL server</strong> and a <strong>GraphQL client</strong>. Both of them talk to each other using GrpahQL query language. GraphQL is transport agnostic and works well <strong>over HTTP</strong>. The client sends a GraphQL query, the server understands what the client has asked it to do and process the request and sends the response. In the REST world, we all know what <strong>CRUD </strong>(Create, Read, Update, Delete) stands for and how it works. In the GraphQL world, the <strong>reads are Queries</strong> and the <strong>writes are Mutations</strong>. That&#39;s it 😊</p><h4>History:</h4><p><strong>Facebook</strong>’s mobile apps have been powered by <strong>GraphQL</strong> <strong>since 2012</strong>. A <strong>GraphQL spec was</strong> <strong>open sourced in 2015</strong>.</p><h4>Schema:</h4><p>GraphQL has a <strong>Schema, </strong>which consists of <strong>Query</strong> (for read operations) and <strong>Mutation </strong>(for write operations) with it’s own type definitions.</p><pre>schema {<br>  query: Query<br>  mutation: Mutation<br>}</pre><h4>Query:</h4><p>Queries are used for read operations. Let’ take a simple example in the context of Facebook. A facebook user can log in and see multiple posts from their friends with a certain number of comments. An illustrative GraphQL type definition in this case may look something like this</p><pre>type <strong>Query</strong> {<br>  posts: [<strong>Post</strong>]         # This query fetches <strong>list of Post</strong>s<br>  ...                   # Other query definitions<br>}</pre><pre>type <strong>Post</strong> {<br>  id: ID!               # Id of the post<br>  at: String!           # Time at which it was Posted<br>  caption: String!      # Caption of the post<br>  mediaUrl: String      # Url to the image or video shared<br>  location: String      # Location of the post<br>  comments: [<strong>Comment</strong>]   # Comments on the post of type Comment<br>  ...                   # Other properties definition of a post<br>}</pre><pre>type <strong>Comment</strong> { <br>  id: ID!               # Id of the comment<br>  comment: String!      # The text of the comment<br>  at: String!           # Time at which it was Commented<br>  by: String!           # The user who made the comment<br>  ...                   # Other properties definition of a Comment</pre><pre>}    </pre><h4>Sample GraphQL Query:</h4><p>A sample query to fetch posts with comments for each post would look like the following</p><pre>query {<br>  posts {<br>    id<br>    at<br>    caption<br>    mediaUrl<br>    location<br>    comments {<br>      id<br>      comment<br>      at<br>      by<br>    } <br>  }<br>}</pre><p>If you look at the above query, we only ask for the <strong>required fields and nothing more </strong>for the posts as well as the comments for each post. There could be more fields both for posts and comments, which we don&#39;t need and they are not part of the response as well.</p><h4>Sample GraphQL Response</h4><p>Here is a sample response for the above mentioned query. Notice the top level key is &quot;<strong><em>data</em></strong>&quot; followed by the query name which is &quot;<strong><em>posts</em></strong>&quot; in this case.</p><pre>{<br>   &quot;<strong>data</strong>&quot;: {<br>     &quot;<strong>posts</strong>&quot;: [<br>       {<br>         &quot;id&quot;: &quot;some-uuid&quot;,<br>         &quot;at&quot;: &quot;2020-07-26T16:10:57.076+0000&quot;,<br>         &quot;caption&quot;: &quot;My latest post!!&quot;,<br>         &quot;mediaUrl&quot;: &quot;http://somecdn/some-image.jpg&quot;,<br>         &quot;location&quot;: &quot;Pune, India&quot;,<br>         &quot;comments&quot;: [<br>            {<br>              &quot;id&quot;: &quot;some-uuid&quot;,<br>              &quot;comment&quot;: &quot;Wow, what a place!!&quot;,<br>              &quot;at&quot;: &quot;2020-07-26T16:11:05.010+0000&quot;,<br>              &quot;by&quot;: &quot;Mahesh&quot;<br>            },<br>            {<br>              &quot;id&quot;: &quot;some-uuid&quot;,<br>              &quot;comment&quot;: &quot;I have been there too!&quot;,<br>              &quot;at&quot;: &quot;2020-07-26T17:01:30.015+0000&quot;,<br>              &quot;by&quot;: &quot;Neeta&quot;<br>            }<br>          ]<br>       },<br>       ... // more posts in similar format<br>     ]<br>   }<br>}</pre><h4>Sample GraphQL Error Response</h4><p>In case of any error, the response would have a list of <strong>errors</strong> and the response would look something like this:</p><pre>{<br>  &quot;errors&quot;: [<br>    {<br>      &quot;errorType&quot;: &quot;SomeException&quot;,<br>      &quot;message&quot;: &quot;Some Error Message&quot; <br>    }<br>  ]<br>}</pre><h4>Mutation:</h4><p>Mutations are used for write operations. Again, in the context of Facebook, an user can share posts, like posts, add comments, delete comments etc. So the type definition for the mutations may look something like this:</p><pre>type <strong>Mutation</strong> {<br>  sharePost(post: Post!): Post<br>  likePost(post: Post!): Post<br>  addComment(postId: ID!, comment: Comment): Comment<br>  deleteComment(commentId: ID!): Comment<br>}</pre><p>We won&#39;t cover examples for the Mutations here, but I would add URLs in the references section.</p><h3>Do I need to use GraphQL?</h3><p>GraphQL provides a complete and understandable description of the data in your API, gives clients<strong> the power to</strong> <strong>ask for exactly what they need and nothing more</strong>, makes it easier to evolve APIs<strong> </strong>over time, and enables powerful developer tools.</p><p>GraphQL has been a popular choice for building<strong> Backends For Frontends(BFFs), </strong>where one needs to aggregate data from multiple data sources to be consumed by their various clients like Web Browsers on Mobile devices, Android App, iOS App, Web Browsers on Desktops/Laptops etc.</p><blockquote>The data required for each of the client(Desktop, Laptop, Mobile) would vary based on the amount of data they can display based on display size of the device. We can create a BFF layer for each type of client or use something like GraphQL which allows the client to ask for exactly what it needs.</blockquote><p>A picture is a worth thousand words. Let&#39;s add a few thousands 😉</p><h4>BFF without GraphQL</h4><p>In this case, all the communication happens using REST and each client has it&#39;’s own BFF layer i.e. one for Web browser, one for Android, one for iOS etc.</p><figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*MhfuM38XIOAVJbYXwwZSNQ.png" /></figure><h4>BFF with GraphQL exposed to clients</h4><p>Here the clients are GraphQL aware and they talk to the API using GraphQL. The GraphQL server talks to the microservices using REST.</p><figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*WAIvjx4RBydeOywNhnrK6Q.png" /></figure><p>One can very well have multiple GraphQL endpoints dedicated for a consumer i.e. you can still have separate GraphQL BFF for Web, Android, iOS etc. Would the duplication of Schema add value?</p><h4>BFF with GraphQL working behind the scenes</h4><p>In this case, we use GraphQL to aggregate the microservices apis but the clients still talk using REST. The clients are not aware of GraphQL and they need not make any change. The GraphQL server still talks to the microservices using REST.</p><figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*1gRvwj6wQroAKKnJ5GYf4g.png" /></figure><p>In this case also, you can have multiple BFFs for each device and each talking to multiple GraphQL APIs behind the scenes</p><h4>So do I really need GraphQL?</h4><p>Based on your service clients (if they are internal i.e. a customer service portal, external i.e. a self service portal or an external business to business customer), who controls their source code and the confidence you have on GraphQL, you would fall in one of the above categories for your BFF implementation. If you are not already using GraphQL, give it a try and discover for yourself, if the trade-offs are worth it.</p><h3>Can GraphQL be used beyond Backends For Frontends(BFFs)?</h3><p>We know for sure, GraphQL can be helpful for BFFs but can it go beyond that. Let&#39;’s see if we can use GraphQL for<strong> server-to-server communication</strong>.</p><h4>GraphQL everywhere</h4><p>In this case, you may still have an aggregator GraphQL API which can aggregate the GraphQL schema of multiple microservices and give you a Graph of your entire business model. The aggregator GraphQL server talks to the microservices using GraphQL instead of REST. The microservices also talk to each other using GraphQL.</p><figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*gC6fchSzdUhQzaqFRsyu_Q.png" /></figure><blockquote>As per Apollo, Appollo Federation is an answer to implementing GraphQL in a microservice architecture.</blockquote><h4>GraphQL and REST</h4><p>You may have some clients where you can&#39;t force them to use GraphQL. So probably you would still have to use REST. Say you are going for GraphQL everywhere, even then, during the transition you may need to support both REST and GraphQL. Let&#39;’s see how it looks</p><figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*d88u6J5a8RSu7zh8DK0WjQ.png" /></figure><h4>GraphQL for Reads and REST for writes</h4><p>One of the possibility is to use GraphQL only for read operations (This is where GraphQL brings a lot of value). The write operations can still be REST. In someway this may look like CQRS working in 2 different protocols for Commands(REST) and Queries (GraphQL). In the world where everyone is making a move towards Serverless architectures, achieving something like this is not very difficult either. Now the real question, is this worth it?</p><h3>Conclusion</h3><p>There are more possible ways of using GraphQL for server to server communication, which is not covered here. At the moment, I have used GraphQL for a very limited server to server communication and like the power it brings. I&#39;m considering to go for GraphQL for READ (within the microservices as well) and still use REST for WRITE. I would like to hear your feedback. Have you have taken this route? Have you successfully used GraphQL beyond BFFs?</p><h3>References</h3><ul><li><a href="https://martinfowler.com/articles/richardsonMaturityModel.html">REST</a> (Martin Fowler)</li><li><a href="https://graphql.org">GraphQL</a></li><li><a href="https://graphql.org/learn/queries/#mutations">GraphQL Mutations</a></li><li><a href="https://philcalcado.com/2015/09/18/the_back_end_for_front_end_pattern_bff.html">Backends For Frontends</a> (Phil Calçado)</li><li><a href="https://samnewman.io/patterns/architectural/bff/">Backends For Frontends</a> (Sam Newman)</li><li><a href="https://martinfowler.com/bliki/CQRS.html">CQRS</a> (Martin Fowler)</li><li><a href="https://www.apollographql.com/blog/apollo-federation-f260cf525d21/">Appollo Federation</a></li></ul><img src="https://medium.com/_/stat?event=post.clientViewed&referrerSource=full_rss&postId=a1cb34170fff" width="1" height="1" alt="">
+
+    </div>
+
+    <footer class="post-footer">
+      <div class="post-sharing">
+        <h4>Share this post</h4>
+        <div class="sharing-buttons">
+          <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fgsswain.com%2F2020%2F07%2F28%2Frest-graphql-beyond-bffs.html&text=REST+%2B+GraphQL+%28beyond+BFFs%29" 
+             target="_blank" rel="noopener" class="share-btn twitter">
+            <i class="fab fa-twitter"></i> Twitter
+          </a>
+          <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fgsswain.com%2F2020%2F07%2F28%2Frest-graphql-beyond-bffs.html" 
+             target="_blank" rel="noopener" class="share-btn linkedin">
+            <i class="fab fa-linkedin"></i> LinkedIn
+          </a>
+        </div>
+      </div>
+
+      <div class="post-navigation">
+        
+        <div class="prev-post">
+          <span class="nav-label">Previous Post</span>
+          <a href="/2020/07/03/springboot-digitalocean-droplets.html">SpringBoot + DigitalOcean Droplets</a>
+        </div>
+        
+        
+        
+        <div class="next-post">
+          <span class="nav-label">Next Post</span>
+          <a href="/2020/09/20/quarkus-and-the-java-developer-experience.html">Quarkus and the Java Developer Experience</a>
+        </div>
+        
+      </div>
+
+      <div class="author-bio">
+        <div class="author-avatar">
+          <img src="/assets/images/avatar.jpeg" alt="Girija Swain" />
+        </div>
+        <div class="author-info">
+          <h4>About the Author</h4>
+          <p>Girija Swain is a Lead Engineer and Digital Transformation Specialist with 15+ years of experience in enterprise software architecture, cloud-native systems, and engineering leadership.</p>
+          <div class="author-links">
+            <a href="/about/">Learn More</a>
+            <a href="https://linkedin.com/in/gsswain">Connect on LinkedIn</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </article>
+</div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>Girija Swain</h3>
+          <div class="footer-social">
+            <a href="https://linkedin.com/in/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-linkedin"></i>
+            </a>
+            <a href="https://github.com/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-github"></i>
+            </a>
+            <a href="https://stackoverflow.com/users/4601120/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-stack-overflow"></i>
+            </a>
+            <a href="mailto:contact@gsswain.com">
+              <i class="fas fa-envelope"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="/about/">About</a></li>
+            <li><a href="/case-studies/">Case Studies</a></li>
+            <li><a href="/blog/">Blog</a></li>
+            <li><a href="/contact/">Contact</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Expertise</h4>
+          <ul>
+            <li>Digital Transformation</li>
+            <li>Technology Leadership</li>
+            <li>Cloud Architecture</li>
+            <li>Microservices</li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Recognition</h4>
+          <ul>
+            <li>Top 7% Stack Overflow</li>
+            <li>GCP Professional Architect</li>
+            <li>AWS Solutions Architect</li>
+            <li>15+ Years Experience</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2025 Girija Swain. All rights reserved.</p>
+        <p>Built with Jekyll • Hosted on GitHub Pages</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>
