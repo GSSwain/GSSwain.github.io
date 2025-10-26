@@ -1,0 +1,131 @@
+---
+layout: post
+title: "Understanding JMH: Java Microbenchmarking Made Simple"
+date: 2025-10-26
+categories: java performance benchmarking
+---
+
+<p>
+In the world of software development, performance matters. But how do we accurately measure and compare the performance of different implementations? This is where JMH (Java Microbenchmark Harness) comes into play. In this post, we'll explore JMH through a practical example of benchmarking trace ID generation methods.
+</p>
+
+<h2>What is JMH?</h2>
+
+<p>
+JMH is a Java harness for building, running, and analyzing nano/micro/milli/macro benchmarks written in Java and other languages targeting the JVM. It was developed by the OpenJDK team and is used extensively in the JDK itself to perform performance testing.
+</p>
+
+<h2>Setting Up JMH in Your Project</h2>
+
+<p>
+To get started with JMH, you'll need to add the necessary dependencies to your build configuration. Here's how to set it up in a Gradle project:
+</p>
+
+{% highlight gradle %}
+plugins {
+    id 'java'
+    id 'me.champeau.jmh' version '0.7.1'
+    id 'io.morethan.jmhreport' version '0.9.0'
+}
+
+dependencies {
+    implementation 'org.openjdk.jmh:jmh-core:1.37'
+    implementation 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
+}
+
+jmh {
+    resultFormat = 'JSON'
+    resultsFile = layout.buildDirectory.file('reports/jmh/results.json').get().asFile
+    jmhVersion = '1.37'
+    timeUnit = 'ns'
+    threads = project.hasProperty('jmh.threads') ? project.property('jmh.threads').toInteger() : 1
+}
+{% endhighlight %}
+
+<h2>Writing JMH Benchmarks</h2>
+
+<p>
+Let's look at a real-world example where we benchmark two different approaches to generating trace IDs: using UUID and using OpenTelemetry's IdGenerator.
+</p>
+
+{% highlight java %}
+@BenchmarkMode({Mode.AverageTime, Mode.Throughput})
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@State(Scope.Thread)
+@Warmup(iterations = 5, time = 1)
+@Measurement(iterations = 10, time = 1)
+@Fork(2)
+public class TraceIdGeneratorBenchmark {
+    
+    private IdGenerator otelIdGenerator;
+
+    @Setup
+    public void setup() {
+        otelIdGenerator = IdGenerator.random();
+    }
+
+    @Benchmark
+    public void uuidBasedTraceId(Blackhole blackhole) {
+        String traceId = UUID.randomUUID().toString();
+        blackhole.consume(traceId);
+    }
+
+    @Benchmark
+    public void openTelemetryTraceId(Blackhole blackhole) {
+        String traceId = otelIdGenerator.generateTraceId();
+        blackhole.consume(traceId);
+    }
+}
+{% endhighlight %}
+
+<h2>Understanding JMH Annotations</h2>
+
+<p>Let's break down the key JMH annotations:</p>
+
+<ul>
+    <li><strong>@BenchmarkMode</strong>: Specifies what to measure. In our example, we measure both average time and throughput.</li>
+    <li><strong>@OutputTimeUnit</strong>: Defines the unit for the results (nanoseconds in our case).</li>
+    <li><strong>@State</strong>: Defines the scope of our benchmark state (Thread scope means each thread has its own copy).</li>
+    <li><strong>@Warmup</strong>: Specifies warmup iterations to get the JVM into a steady state.</li>
+    <li><strong>@Measurement</strong>: Defines how many measurement iterations to perform.</li>
+    <li><strong>@Fork</strong>: Indicates how many separate JVM forks to use (helps eliminate external factors).</li>
+</ul>
+
+<h2>Interpreting JMH Results</h2>
+
+<p>
+When you run JMH benchmarks, you'll get results in two formats:
+</p>
+
+<ol>
+    <li><strong>Console Output</strong>: Shows a summary of each benchmark, including:
+        <ul>
+            <li>Score: The primary measurement (average time or operations/time unit)</li>
+            <li>Error: The statistical error margin</li>
+            <li>Units: The measurement unit (ns/op for average time, ops/ns for throughput)</li>
+        </ul>
+    </li>
+    <li><strong>JSON Report</strong>: A detailed report containing all measurements, which can be processed for deeper analysis.</li>
+</ol>
+
+<h2>Best Practices</h2>
+
+<p>When writing JMH benchmarks, keep these points in mind:</p>
+
+<ul>
+    <li>Use <strong>Blackhole.consume()</strong> to prevent dead code elimination</li>
+    <li>Include proper warmup iterations to ensure JVM optimization</li>
+    <li>Run multiple forks to get statistically significant results</li>
+    <li>Consider external factors like garbage collection and JIT compilation</li>
+    <li>Document your benchmark environment (JVM version, available processors, etc.)</li>
+</ul>
+
+<h2>Conclusion</h2>
+
+<p>
+JMH is a powerful tool for measuring and comparing code performance on the JVM. While it requires careful setup and interpretation, it provides valuable insights into code performance characteristics. Remember that microbenchmarks should be one of many tools in your performance testing arsenal, alongside profiling and real-world performance testing.
+</p>
+
+<p>
+The example used in this post can be found in the <a href="https://github.com/GSSwain/benchmark-trace-id-generator">benchmark-trace-id-generator</a> repository.
+</p>
