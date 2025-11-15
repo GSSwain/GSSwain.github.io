@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Understanding JMH: Java Microbenchmarking Made Simple | Girija Swain</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="Understanding JMH: Java Microbenchmarking Made Simple" />
+<meta name="author" content="Girija Swain" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="In the world of software development, performance matters. But how do we accurately measure and compare the performance of different implementations? This is where JMH (Java Microbenchmark Harness) comes into play. In this post, we&#39;ll explore JMH through a practical example of benchmarking trace ID generation methods." />
+<meta property="og:description" content="In the world of software development, performance matters. But how do we accurately measure and compare the performance of different implementations? This is where JMH (Java Microbenchmark Harness) comes into play. In this post, we&#39;ll explore JMH through a practical example of benchmarking trace ID generation methods." />
+<link rel="canonical" href="https://gsswain.com/2025/10/26/understanding-jmh-java-microbenchmarking.html" />
+<meta property="og:url" content="https://gsswain.com/2025/10/26/understanding-jmh-java-microbenchmarking.html" />
+<meta property="og:site_name" content="Girija Swain" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2025-10-26T00:00:00+00:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Understanding JMH: Java Microbenchmarking Made Simple" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Girija Swain"},"dateModified":"2025-10-26T00:00:00+00:00","datePublished":"2025-10-26T00:00:00+00:00","description":"In the world of software development, performance matters. But how do we accurately measure and compare the performance of different implementations? This is where JMH (Java Microbenchmark Harness) comes into play. In this post, we&#39;ll explore JMH through a practical example of benchmarking trace ID generation methods.","headline":"Understanding JMH: Java Microbenchmarking Made Simple","mainEntityOfPage":{"@type":"WebPage","@id":"https://gsswain.com/2025/10/26/understanding-jmh-java-microbenchmarking.html"},"url":"https://gsswain.com/2025/10/26/understanding-jmh-java-microbenchmarking.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <link rel="canonical" href="https://gsswain.com/2025/10/26/understanding-jmh-java-microbenchmarking.html">
+  <link rel="alternate" type="application/rss+xml" title="Girija Swain" href="/feed.xml">
+  
+  <!-- Google Analytics -->
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NK9JKFXRK7"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-NK9JKFXRK7');
+  </script>
+  
+
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="container">
+      <nav class="site-nav">
+        <div class="nav-brand">
+          <a class="site-title" href="/">
+            Girija Swain
+          </a>
+          <!-- <p class="site-tagline">Digital Transformation Specialist</p> -->
+        </div>
+        
+        <div class="nav-menu">
+          <ul class="nav-links">
+            
+            <li class="nav-item">
+              <a href="/" 
+                 class="nav-link">
+                Home
+              </a>
+            </li>
+            
+            <li class="nav-item">
+              <a href="/about/" 
+                 class="nav-link">
+                About
+              </a>
+            </li>
+            
+            <li class="nav-item">
+              <a href="/case-studies/" 
+                 class="nav-link">
+                Case Studies
+              </a>
+            </li>
+            
+            <li class="nav-item">
+              <a href="/blog/" 
+                 class="nav-link">
+                Blog
+              </a>
+            </li>
+            
+            <li class="nav-item">
+              <a href="/contact/" 
+                 class="nav-link">
+                Contact
+              </a>
+            </li>
+            
+          </ul>
+          
+          <div class="nav-social">
+            <a href="https://linkedin.com/in/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-linkedin"></i>
+            </a>
+            <a href="https://github.com/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-github"></i>
+            </a>
+            <a href="https://stackoverflow.com/users/4601120/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-stack-overflow"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div class="nav-toggle">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <div class="container">
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">Understanding JMH: Java Microbenchmarking Made Simple</h1>
+      <div class="post-meta">
+        <time datetime="2025-10-26T00:00:00+00:00">
+          October 26, 2025
+        </time>
+        
+        <span class="post-author">by Girija Swain</span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-content">
+      <p>
+In the world of software development, performance matters. But how do we accurately measure and compare the performance of different implementations? This is where JMH (Java Microbenchmark Harness) comes into play. In this post, we'll explore JMH through a practical example of benchmarking trace ID generation methods.
+</p>
+
+<h2>What is JMH?</h2>
+
+<p>
+JMH is a Java harness for building, running, and analyzing nano/micro/milli/macro benchmarks written in Java and other languages targeting the JVM. It was developed by the OpenJDK team and is used extensively in the JDK itself to perform performance testing.
+</p>
+
+<h2>Setting Up JMH with Gradle</h2>
+
+<p>
+To get started with JMH, you'll need to add the necessary dependencies to your build configuration. Here's how to set it up in a Gradle project:
+</p>
+
+<figure class="highlight"><pre><code class="language-gradle" data-lang="gradle"><span class="n">plugins</span> <span class="o">{</span>
+    <span class="n">id</span> <span class="s1">'java'</span>
+    <span class="n">id</span> <span class="s1">'me.champeau.jmh'</span> <span class="n">version</span> <span class="s1">'0.7.1'</span>
+    <span class="n">id</span> <span class="s1">'io.morethan.jmhreport'</span> <span class="n">version</span> <span class="s1">'0.9.0'</span>
+<span class="o">}</span>
+
+<span class="k">dependencies</span> <span class="o">{</span>
+    <span class="n">implementation</span> <span class="s1">'org.openjdk.jmh:jmh-core:1.37'</span>
+    <span class="n">implementation</span> <span class="s1">'org.openjdk.jmh:jmh-generator-annprocess:1.37'</span>
+<span class="o">}</span>
+
+<span class="n">jmh</span> <span class="o">{</span>
+    <span class="n">resultFormat</span> <span class="o">=</span> <span class="s1">'JSON'</span>
+    <span class="n">resultsFile</span> <span class="o">=</span> <span class="n">layout</span><span class="o">.</span><span class="na">buildDirectory</span><span class="o">.</span><span class="na">file</span><span class="o">(</span><span class="s1">'reports/jmh/results.json'</span><span class="o">).</span><span class="na">get</span><span class="o">().</span><span class="na">asFile</span>
+    <span class="n">jmhVersion</span> <span class="o">=</span> <span class="s1">'1.37'</span>
+    <span class="n">timeUnit</span> <span class="o">=</span> <span class="s1">'ns'</span>
+    <span class="n">threads</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="na">hasProperty</span><span class="o">(</span><span class="s1">'jmh.threads'</span><span class="o">)</span> <span class="o">?</span> <span class="n">project</span><span class="o">.</span><span class="na">property</span><span class="o">(</span><span class="s1">'jmh.threads'</span><span class="o">).</span><span class="na">toInteger</span><span class="o">()</span> <span class="o">:</span> <span class="mi">1</span>
+<span class="o">}</span></code></pre></figure>
+
+<h2>Writing JMH Benchmarks</h2>
+
+<p>
+Let's look at a real-world example where we benchmark two different approaches to generating trace IDs: using UUID and using OpenTelemetry's IdGenerator.
+</p>
+
+<figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="nd">@BenchmarkMode</span><span class="o">({</span><span class="nc">Mode</span><span class="o">.</span><span class="na">AverageTime</span><span class="o">,</span> <span class="nc">Mode</span><span class="o">.</span><span class="na">Throughput</span><span class="o">})</span>
+<span class="nd">@OutputTimeUnit</span><span class="o">(</span><span class="nc">TimeUnit</span><span class="o">.</span><span class="na">NANOSECONDS</span><span class="o">)</span>
+<span class="nd">@State</span><span class="o">(</span><span class="nc">Scope</span><span class="o">.</span><span class="na">Thread</span><span class="o">)</span>
+<span class="nd">@Warmup</span><span class="o">(</span><span class="n">iterations</span> <span class="o">=</span> <span class="mi">5</span><span class="o">,</span> <span class="n">time</span> <span class="o">=</span> <span class="mi">1</span><span class="o">)</span>
+<span class="nd">@Measurement</span><span class="o">(</span><span class="n">iterations</span> <span class="o">=</span> <span class="mi">10</span><span class="o">,</span> <span class="n">time</span> <span class="o">=</span> <span class="mi">1</span><span class="o">)</span>
+<span class="nd">@Fork</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">TraceIdGeneratorBenchmark</span> <span class="o">{</span>
+    
+    <span class="kd">private</span> <span class="nc">IdGenerator</span> <span class="n">otelIdGenerator</span><span class="o">;</span>
+
+    <span class="nd">@Setup</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setup</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">otelIdGenerator</span> <span class="o">=</span> <span class="nc">IdGenerator</span><span class="o">.</span><span class="na">random</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Benchmark</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">uuidBasedTraceId</span><span class="o">(</span><span class="nc">Blackhole</span> <span class="n">blackhole</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">String</span> <span class="n">traceId</span> <span class="o">=</span> <span class="no">UUID</span><span class="o">.</span><span class="na">randomUUID</span><span class="o">().</span><span class="na">toString</span><span class="o">();</span>
+        <span class="n">blackhole</span><span class="o">.</span><span class="na">consume</span><span class="o">(</span><span class="n">traceId</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Benchmark</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">openTelemetryTraceId</span><span class="o">(</span><span class="nc">Blackhole</span> <span class="n">blackhole</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">String</span> <span class="n">traceId</span> <span class="o">=</span> <span class="n">otelIdGenerator</span><span class="o">.</span><span class="na">generateTraceId</span><span class="o">();</span>
+        <span class="n">blackhole</span><span class="o">.</span><span class="na">consume</span><span class="o">(</span><span class="n">traceId</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre></figure>
+
+<h2>Understanding JMH Annotations</h2>
+
+<p>Let's break down the key JMH annotations:</p>
+
+<ul>
+    <li><strong>@BenchmarkMode</strong>: Specifies what to measure. In our example, we measure both average time and throughput.</li>
+    <li><strong>@OutputTimeUnit</strong>: Defines the unit for the results (nanoseconds in our case).</li>
+    <li><strong>@State</strong>: Defines the scope of our benchmark state (Thread scope means each thread has its own copy).</li>
+    <li><strong>@Warmup</strong>: Specifies warmup iterations to get the JVM into a steady state.</li>
+    <li><strong>@Measurement</strong>: Defines how many measurement iterations to perform.</li>
+    <li><strong>@Fork</strong>: Indicates how many separate JVM forks to use (helps eliminate external factors).</li>
+</ul>
+
+<h2>Running the Benchmark Project</h2>
+
+<p>
+Let's walk through setting up and running our trace ID generator benchmark project:
+</p>
+
+<h3>Project Setup</h3>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c"># Clone the repository</span>
+git clone https://github.com/GSSwain/benchmark-trace-id-generator.git
+<span class="nb">cd </span>benchmark-trace-id-generator
+
+<span class="c"># Run the benchmark with single thread</span>
+./gradlew clean jmh
+
+<span class="c"># Run with multiple threads (e.g., 10 threads)</span>
+./gradlew clean jmh <span class="nt">-Pjmh</span>.threads<span class="o">=</span>10
+
+<span class="c"># Generate html report</span>
+./gradlew clean jmhReport</code></pre></figure>
+
+<h3>Understanding the Project Structure</h3>
+
+<p>The benchmark project includes:</p>
+<ul>
+    <li>JMH configuration in build.gradle</li>
+    <li>Benchmark implementation in src/jmh/java</li>
+    <li>Two trace ID generation methods:
+        <ul>
+            <li>UUID-based: Using Java's built-in UUID generator</li>
+            <li>OpenTelemetry: Using OpenTelemetry's RandomIdGenerator</li>
+        </ul>
+    </li>
+</ul>
+
+<h2>Analyzing Benchmark Results</h2>
+
+<h3>Single-Thread Performance (JDK 25)</h3>
+
+<table class="performance-table">
+<thead>
+<tr>
+    <th>Implementation</th>
+    <th class="metric-col">Average Time (ns)</th>
+    <th class="metric-col">Throughput (M ops/s)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+    <td class="impl-cell highlight-otel">OpenTelemetry</td>
+    <td class="metric-cell">14.321 ±0.130</td>
+    <td class="metric-cell">69.8 ±0.6</td>
+</tr>
+<tr>
+    <td class="impl-cell">UUID</td>
+    <td class="metric-cell">247.141 ±8.476</td>
+    <td class="metric-cell">4.0 ±0.1</td>
+</tr>
+</tbody>
+</table>
+
+<h3>Multi-Thread Performance (10 Threads, JDK 25)</h3>
+
+<table class="performance-table">
+<thead>
+<tr>
+    <th>Implementation</th>
+    <th class="metric-col">Average Time (ns)</th>
+    <th class="metric-col">Throughput (M ops/s)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+    <td class="impl-cell highlight-otel">OpenTelemetry</td>
+    <td class="metric-cell">24.967 ±1.525</td>
+    <td class="metric-cell">400.5 ±24.4</td>
+</tr>
+<tr>
+    <td class="impl-cell">UUID</td>
+    <td class="metric-cell">3,761.317 ±65.991</td>
+    <td class="metric-cell">2.7 ±0.1</td>
+</tr>
+</tbody>
+</table>
+
+<style>
+.performance-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 15px;
+    border: 1px solid #ddd;
+}
+
+.performance-table th,
+.performance-table td {
+    padding: 12px;
+    text-align: right;
+    border: 1px solid #ddd;
+}
+
+.performance-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+    text-align: center;
+}
+
+.performance-table .impl-cell {
+    text-align: left;
+}
+
+.performance-table .metric-col {
+    width: 33%;
+}
+
+.performance-table .metric-cell {
+    font-family: monospace;
+}
+
+.performance-table .highlight-otel {
+    background-color: #e8f5e9;
+}
+
+.performance-table tr:hover {
+    background-color: #f8f9fa;
+}
+</style>
+
+<h3>Interpreting These Results</h3>
+
+<p>Let's break down what these numbers tell us:</p>
+
+<h4>1. Single-Thread Analysis</h4>
+<ul>
+    <li><strong>Average Time:</strong>
+        <ul>
+            <li>OpenTelemetry: ~14.3 nanoseconds per operation</li>
+            <li>UUID: ~247.1 nanoseconds per operation</li>
+            <li>OpenTelemetry is approximately 17x faster</li>
+        </ul>
+    </li>
+    <li><strong>Throughput:</strong>
+        <ul>
+            <li>OpenTelemetry: ~69.8 million ops/second</li>
+            <li>UUID: ~4.0 million ops/second</li>
+        </ul>
+    </li>
+</ul>
+
+<h4>2. Multi-Thread Analysis (10 Threads)</h4>
+<ul>
+    <li><strong>Average Time:</strong>
+        <ul>
+            <li>OpenTelemetry: Only increases to ~25 nanoseconds (1.7x increase)</li>
+            <li>UUID: Jumps to ~3,761 nanoseconds (15x increase)</li>
+            <li>OpenTelemetry is now 150x faster</li>
+        </ul>
+    </li>
+    <li><strong>Throughput:</strong>
+        <ul>
+            <li>OpenTelemetry: Increases to ~400.5 million ops/second (excellent scaling)</li>
+            <li>UUID: Decreases to ~2.7 million ops/second (poor scaling)</li>
+        </ul>
+    </li>
+</ul>
+
+<h4>3. Key Observations</h4>
+<ul>
+    <li><strong>Thread Scaling:</strong>
+        <ul>
+            <li>OpenTelemetry shows excellent thread scaling (6x throughput improvement with 10 threads)</li>
+            <li>UUID shows poor thread scaling (throughput actually decreases)</li>
+        </ul>
+    </li>
+    <li><strong>Consistency:</strong>
+        <ul>
+            <li>OpenTelemetry has very small error margins (±0.130 to ±1.525)</li>
+            <li>UUID shows larger variations (±8.476 to ±65.991)</li>
+        </ul>
+    </li>
+</ul>
+
+<p>
+For a complete breakdown of the results across different JDK versions and a deeper analysis of the real-world impact, please see the follow-up post: <a href="/2025/11/15/performance-analysis-trace-id-generation.html">Trace ID Generation: A Performance Analysis of UUID vs. OpenTelemetry</a>.
+</p>
+
+<h2>Best Practices</h2>
+
+<p>When writing JMH benchmarks, keep these points in mind:</p>
+
+<ul>
+    <li>Use <strong>Blackhole.consume()</strong> to prevent dead code elimination</li>
+    <li>Include proper warmup iterations to ensure JVM optimization</li>
+    <li>Run multiple forks to get statistically significant results</li>
+    <li>Consider external factors like garbage collection and JIT compilation</li>
+    <li>Document your benchmark environment (JVM version, available processors, etc.)</li>
+</ul>
+
+<h2>Conclusion</h2>
+
+<p>
+JMH is a powerful tool for measuring and comparing code performance on the JVM. While it requires careful setup and interpretation, it provides valuable insights into code performance characteristics. Remember that microbenchmarks should be one of many tools in your performance testing arsenal, alongside profiling and real-world performance testing.
+</p>
+
+<p>
+The example used in this post can be found in the <a href="https://github.com/GSSwain/benchmark-trace-id-generator">benchmark-trace-id-generator</a> repository.
+</p>
+    </div>
+
+    <footer class="post-footer">
+      <div class="post-sharing">
+        <h4>Share this post</h4>
+        <div class="sharing-buttons">
+          <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fgsswain.com%2F2025%2F10%2F26%2Funderstanding-jmh-java-microbenchmarking.html&text=Understanding+JMH%3A+Java+Microbenchmarking+Made+Simple" 
+             target="_blank" rel="noopener" class="share-btn twitter">
+            <i class="fab fa-twitter"></i> Twitter
+          </a>
+          <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fgsswain.com%2F2025%2F10%2F26%2Funderstanding-jmh-java-microbenchmarking.html" 
+             target="_blank" rel="noopener" class="share-btn linkedin">
+            <i class="fab fa-linkedin"></i> LinkedIn
+          </a>
+        </div>
+      </div>
+
+      <div class="post-navigation">
+        
+        <div class="prev-post">
+          <span class="nav-label">Previous Post</span>
+          <a href="/2021/03/14/serverless-pdf-generation-from-html-wysiwyg-as-pdf.html">Serverless PDF Generation from HTML (WYSIWYG as PDF)</a>
+        </div>
+        
+        
+        
+        <div class="next-post">
+          <span class="nav-label">Next Post</span>
+          <a href="/java/performance/optimization/cost-analysis/2025/11/15/performance-analysis-trace-id-generation.html">Trace ID Generation: A Performance Analysis of UUID vs. OpenTelemetry</a>
+        </div>
+        
+      </div>
+
+      <div class="author-bio">
+        <div class="author-avatar">
+          <img src="/assets/images/avatar.jpeg" alt="Girija Swain" />
+        </div>
+        <div class="author-info">
+          <h4>About the Author</h4>
+          <p>Girija Swain is a Lead Engineer and Digital Transformation Specialist with 15+ years of experience in enterprise software architecture, cloud-native systems, and engineering leadership.</p>
+          <div class="author-links">
+            <a href="/about/">Learn More</a>
+            <a href="https://linkedin.com/in/gsswain">Connect on LinkedIn</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </article>
+</div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>Girija Swain</h3>
+          <div class="footer-social">
+            <a href="https://linkedin.com/in/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-linkedin"></i>
+            </a>
+            <a href="https://github.com/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-github"></i>
+            </a>
+            <a href="https://stackoverflow.com/users/4601120/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-stack-overflow"></i>
+            </a>
+            <a href="mailto:contact@gsswain.com">
+              <i class="fas fa-envelope"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="/about/">About</a></li>
+            <li><a href="/case-studies/">Case Studies</a></li>
+            <li><a href="/blog/">Blog</a></li>
+            <li><a href="/contact/">Contact</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Expertise</h4>
+          <ul>
+            <li>Digital Transformation</li>
+            <li>Technology Leadership</li>
+            <li>Cloud Architecture</li>
+            <li>Microservices</li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Recognition</h4>
+          <ul>
+            <li>Top 7% Stack Overflow</li>
+            <li>GCP Professional Architect</li>
+            <li>AWS Solutions Architect</li>
+            <li>15+ Years Experience</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2025 Girija Swain. All rights reserved.</p>
+        <p>Built with Jekyll • Hosted on GitHub Pages</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>
