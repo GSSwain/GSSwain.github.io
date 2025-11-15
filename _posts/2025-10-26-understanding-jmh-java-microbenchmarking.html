@@ -135,20 +135,20 @@ cd benchmark-trace-id-generator
 <thead>
 <tr>
     <th>Implementation</th>
-    <th>Average Time (ns)</th>
-    <th>Throughput (ops/ns)</th>
+    <th class="metric-col">Average Time (ns)</th>
+    <th class="metric-col">Throughput (M ops/s)</th>
 </tr>
 </thead>
 <tbody>
 <tr>
     <td class="impl-cell highlight-otel">OpenTelemetry</td>
     <td class="metric-cell">14.321 ±0.130</td>
-    <td class="metric-cell">0.069 ±0.001</td>
+    <td class="metric-cell">69.8 ±0.6</td>
 </tr>
 <tr>
     <td class="impl-cell">UUID</td>
     <td class="metric-cell">247.141 ±8.476</td>
-    <td class="metric-cell">0.004 ±0.001</td>
+    <td class="metric-cell">4.0 ±0.1</td>
 </tr>
 </tbody>
 </table>
@@ -159,20 +159,20 @@ cd benchmark-trace-id-generator
 <thead>
 <tr>
     <th>Implementation</th>
-    <th>Average Time (ns)</th>
-    <th>Throughput (ops/ns)</th>
+    <th class="metric-col">Average Time (ns)</th>
+    <th class="metric-col">Throughput (M ops/s)</th>
 </tr>
 </thead>
 <tbody>
 <tr>
     <td class="impl-cell highlight-otel">OpenTelemetry</td>
     <td class="metric-cell">24.967 ±1.525</td>
-    <td class="metric-cell">0.420 ±0.007</td>
+    <td class="metric-cell">400.5 ±24.4</td>
 </tr>
 <tr>
     <td class="impl-cell">UUID</td>
     <td class="metric-cell">3,761.317 ±65.991</td>
-    <td class="metric-cell">0.003 ±0.001</td>
+    <td class="metric-cell">2.7 ±0.1</td>
 </tr>
 </tbody>
 </table>
@@ -203,6 +203,10 @@ cd benchmark-trace-id-generator
     text-align: left;
 }
 
+.performance-table .metric-col {
+    width: 33%;
+}
+
 .performance-table .metric-cell {
     font-family: monospace;
 }
@@ -231,8 +235,8 @@ cd benchmark-trace-id-generator
     </li>
     <li><strong>Throughput:</strong>
         <ul>
-            <li>OpenTelemetry: 0.069 operations per nanosecond (69 million ops/second)</li>
-            <li>UUID: 0.004 operations per nanosecond (4 million ops/second)</li>
+            <li>OpenTelemetry: ~69.8 million ops/second</li>
+            <li>UUID: ~4.0 million ops/second</li>
         </ul>
     </li>
 </ul>
@@ -248,8 +252,8 @@ cd benchmark-trace-id-generator
     </li>
     <li><strong>Throughput:</strong>
         <ul>
-            <li>OpenTelemetry: Increases to 0.420 ops/ns (excellent scaling)</li>
-            <li>UUID: Decreases to 0.003 ops/ns (poor scaling)</li>
+            <li>OpenTelemetry: Increases to ~400.5 million ops/second (excellent scaling)</li>
+            <li>UUID: Decreases to ~2.7 million ops/second (poor scaling)</li>
         </ul>
     </li>
 </ul>
@@ -269,6 +273,10 @@ cd benchmark-trace-id-generator
         </ul>
     </li>
 </ul>
+
+<p>
+For a complete breakdown of the results across different JDK versions and a deeper analysis of the real-world impact, please see the follow-up post: <a href="/2025/11/15/performance-analysis-trace-id-generation.html">Trace ID Generation: A Performance Analysis of UUID vs. OpenTelemetry</a>.
+</p>
 
 <h2>Best Practices</h2>
 
