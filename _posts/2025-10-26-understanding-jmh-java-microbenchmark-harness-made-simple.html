@@ -1,0 +1,335 @@
+---
+layout: post
+title: "Understanding JMH: Java Microbenchmark Harness Made Simple"
+date: 2025-10-26
+---
+
+<p>
+    In the world of software development, performance matters. But how do we accurately measure and compare the
+    performance of different implementations? This is where JMH (Java Microbenchmark Harness) comes into play. In this
+    post, we'll explore JMH through a practical example of benchmarking trace ID generation methods.
+</p>
+
+<h2>What is JMH?</h2>
+
+<p>
+    JMH is a Java harness for building, running, and analyzing nano/micro/milli/macro benchmarks written in Java and
+    other languages targeting the JVM. It was developed by the OpenJDK team and is used extensively in the JDK itself to
+    perform performance testing.
+</p>
+
+<h2>Setting Up JMH with Gradle</h2>
+
+<p>
+    To get started with JMH, you'll need to add the necessary dependencies to the build configuration. Here's how to set
+    it up in a Gradle project:
+</p>
+
+{% highlight gradle %}
+plugins {
+    id 'java'
+    id 'me.champeau.jmh' version '0.7.1'
+    id 'io.morethan.jmhreport' version '0.9.0'
+}
+
+dependencies {
+    implementation 'org.openjdk.jmh:jmh-core:1.37'
+    implementation 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
+}
+
+jmh {
+    resultFormat = 'JSON'
+    resultsFile = layout.buildDirectory.file('reports/jmh/results.json').get().asFile
+    jmhVersion = '1.37'
+    timeUnit = 'ns'
+    threads = project.hasProperty('jmh.threads') ? project.property('jmh.threads').toInteger() : 1
+}
+{% endhighlight %}
+
+<h2>Writing JMH Benchmarks</h2>
+
+<p>
+    Let's look at a real-world example where we benchmark two different approaches to generating trace IDs: using <code>UUID</code>
+    and using OpenTelemetry's <code>IdGenerator</code>.
+</p>
+
+{% highlight java %}
+@BenchmarkMode({Mode.AverageTime})
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@State(Scope.Thread)
+@Warmup(iterations = 5, time = 1)
+@Measurement(iterations = 10, time = 1)
+@Fork(2)
+public class TraceIdGeneratorBenchmark {
+    
+    private IdGenerator otelIdGenerator;
+
+    @Setup
+    public void setup() {
+        otelIdGenerator = IdGenerator.random();
+    }
+
+    @Benchmark
+    public void uuidBasedTraceId(Blackhole blackhole) {
+        String traceId = UUID.randomUUID().toString();
+        blackhole.consume(traceId);
+    }
+
+    @Benchmark
+    public void openTelemetryTraceId(Blackhole blackhole) {
+        String traceId = otelIdGenerator.generateTraceId();
+        blackhole.consume(traceId);
+    }
+}
+{% endhighlight %}
+
+<h2>Understanding JMH Annotations</h2>
+
+<p>Let's break down the key JMH annotations:</p>
+
+<ul>
+    <li><code>@BenchmarkMode</code>: Specifies what to measure. In our example, we measure average time <code>(Mode.AverageTime)</code>.
+    </li>
+    <li><code>@OutputTimeUnit</code>: Defines the unit for the results. In our example it is in nanoseconds <code>(TimeUnit.NANOSECONDS)</code>.
+    </li>
+    <li><code>@State</code>: Defines the scope of our benchmark state (Thread scope means each thread has its own copy).
+    </li>
+    <li><code>@Warmup</code>: This annotation controls the "warm-up" phase of the benchmark. Before JMH starts
+        collecting actual performance data, it runs the benchmark code several times to allow the Java Virtual Machine
+        (JVM) to reach a "steady state."
+        <ul>
+            <li>
+                <code>iterations = 5</code> means JMH will run 5 warm-up iterations.
+            </li>
+            <li>
+                <code>time = 1</code> indicates that each of these 5 warm-up iterations will run for 1 second. During
+                this second, JMH will execute the benchmark method as many times as possible.
+            </li>
+        </ul>
+        <p>The results from these warm-up runs are discarded, ensuring that the subsequent measurements reflect the
+            performance of fully optimized code. Those warmup cycles take care of the below:</p>
+        <ul>
+            <li><strong>JIT Compilation:</strong> The JVM's Just-In-Time (JIT) compiler needs time to identify "hot"
+                code paths and optimize them into highly efficient machine code. The first few executions of a method
+                are often much slower than subsequent ones.
+            </li>
+            <li><strong>Class Loading:</strong> Classes need to be loaded into memory, which incurs a one-time cost.
+            </li>
+        </ul>
+
+    </li>
+    <li><code>@Measurement</code>: This annotation defines the actual "measurement" phase, which begins immediately
+        after the warm-up phase concludes. This is where JMH collects the data that will be used to generate the
+        benchmark report.
+        <ul>
+            <li><code>iterations = 10</code> specifies that JMH will perform 10 separate measurement iterations. Each of
+                these iterations will produce a single data point (a performance score).
+            </li>
+            <li><code>time = 1</code> indicates that each of these 10 measurement iterations will run for 1 second.
+                During this second, JMH will execute the benchmark method as many times as possible.
+            </li>
+        </ul>
+        <p>
+            The benchmark score (e.g. Average Time) and its associated error margin are calculated from the statistical
+            analysis of these 10 collected data points.
+        </p>
+    </li>
+    <li><code>@Fork</code>: Indicates how many separate JVM forks to use (helps eliminate external factors). With a
+        value of <code>2</code> in the <code>@Fork</code> annotation, the entire benchmark would run on 2 different JVM
+        forks. This means the
+        final benchmark score is calculated from the statistical analysis of 20 collected data points (10 from each
+        fork), providing a more robust and reliable performance metric.
+    </li>
+</ul>
+
+<h2>Running the Benchmark Project</h2>
+
+<p>
+    Let's walk through setting up and running our trace ID generator benchmark project:
+</p>
+
+<h3>Project Setup</h3>
+
+{% highlight bash %}
+# Clone the repository
+git clone https://github.com/GSSwain/benchmark-trace-id-generator.git
+cd benchmark-trace-id-generator
+{% endhighlight %}
+
+<h3>Understanding the Project Structure</h3>
+<p>The benchmark project includes:</p>
+<ul>
+    <li>JMH configuration in <code>build.gradle</code></li>
+    <li>Benchmark implementation in <code>src/jmh/java</code></li>
+    <li>Two trace ID generation methods:
+        <ul>
+            <li>UUID-based: Using Java's built-in <code>UUID</code> generator</li>
+            <li>OpenTelemetry: Using OpenTelemetry's <code>RandomIdGenerator</code></li>
+        </ul>
+    </li>
+</ul>
+<h3>Understanding the Benchmark report</h3>
+<p>
+    After running the benchmarks, JMH produces a detailed report. Here's a breakdown of what each
+    column means:
+</p>
+<ul>
+    <li><strong>Benchmark:</strong> The name of the benchmark method being tested.</li>
+    <li><strong>Mode:</strong> The measurement mode. In our case, <code>avgt</code> stands for Average Time.</li>
+    <li><strong>Cnt:</strong> The total number of measurement iterations (Forks × Measurement Iterations). In our setup,
+        this is 2 forks × 10 iterations = 20 runs.
+    </li>
+    <li><strong>Score:</strong> The measured performance value. For average time, a lower score is better.</li>
+    <li><strong>Error:</strong> The statistical error margin for the score. A smaller error indicates more stable and
+        reliable results.
+    </li>
+    <li><strong>Units:</strong> The unit of the score, which is <code>ns/op</code> (nanoseconds per operation) in our
+        configuration.
+    </li>
+</ul>
+<h3>Single-Thread Performance (1 Thread, JDK 25)</h3>
+{% highlight bash %}
+# Run the benchmark with single thread on Java 25
+./gradlew clean jmh -PjavaVersion=25
+{% endhighlight %}
+<h4>Console output</h4>
+<pre>
+    Benchmark                                       Mode  Cnt    Score   Error  Units
+    TraceIdGeneratorBenchmark.openTelemetryTraceId  avgt   20   14.675 ± 0.123  ns/op
+    TraceIdGeneratorBenchmark.uuidBasedTraceId      avgt   20  237.660 ± 2.242  ns/op
+</pre>
+
+
+{% highlight bash %}
+# Generate html report with single thread on Java 25
+./gradlew clean jmhReport -PjavaVersion=25
+{% endhighlight %}
+<h4><code>html</code> output</h4>
+<img src="/assets/images/blogs/TraceId-Benchmark-Threads-1.png">
+
+<h3>Multi-Thread Performance (10 Threads, JDK 25)</h3>
+{% highlight bash %}
+# Run with multiple threads on Java 25 (e.g. 10 threads)
+./gradlew clean jmh -PjavaVersion=25 -Pjmh.threads=10
+{% endhighlight %}
+<h4>Console output</h4>
+<pre>
+    Benchmark                                       Mode  Cnt     Score     Error  Units
+    TraceIdGeneratorBenchmark.openTelemetryTraceId  avgt   20    24.478 ±   1.215  ns/op
+    TraceIdGeneratorBenchmark.uuidBasedTraceId      avgt   20  3784.821 ± 133.956  ns/op
+</pre>
+
+{% highlight bash %}
+# Generate html report with multiple threads on Java 25 (e.g. 10 threads)
+./gradlew clean jmhReport -PjavaVersion=25 -Pjmh.threads=10
+{% endhighlight %}
+<h4><code>html</code> output</h4>
+<img src="/assets/images/blogs/TraceId-Benchmark-Threads-10.png">
+
+<style>
+    ul {
+        margin-top: 10px;
+        margin-left: 10px;
+        margin-bottom: 10px;
+    }
+
+    ul li {
+        margin-top: 10px;
+        margin-left: 20px;
+    }
+
+    ul li > p {
+        margin-top: 10px;
+        margin-left: 20px;
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+</style>
+
+<h3>Interpreting These Results</h3>
+
+<p>Let's break down what these numbers tell us:</p>
+
+<h4>1. Single-Thread Analysis</h4>
+<ul>
+    <li><strong>Average Time:</strong>
+        <ul>
+            <li><code>OpenTelemetry</code>: ~14.6 nanoseconds per operation</li>
+            <li><code>UUID</code>: ~237.6 nanoseconds per operation</li>
+            <li><code>OpenTelemetry</code> is approximately 16x faster compared to <code>UUID</code>.</li>
+        </ul>
+    </li>
+</ul>
+
+<h4>2. Multi-Thread Analysis (10 Threads)</h4>
+<ul>
+    <li><strong>Average Time:</strong>
+        <ul>
+            <li><code>OpenTelemetry</code>: Only increases to ~25 nanoseconds (1.7x increase)</li>
+            <li><code>UUID</code>: Jumps to ~3,784 nanoseconds (~16x increase)</li>
+            <li><code>OpenTelemetry</code> is approximately 150x faster compared to <code>UUID</code> in a multithreaded
+                environment with 10 threads.
+            </li>
+        </ul>
+    </li>
+</ul>
+
+<h4>3. Key Observations</h4>
+<ul>
+    <li><strong>Thread Scaling:</strong>
+        <ul>
+            <li><code>OpenTelemetry</code>: The average time per operation sees only a minor increase (from ~14.7 ns to
+                ~24.5 ns) when moving from 1 to 10 threads, demonstrating excellent scaling under contention.
+            </li>
+            <li><code>UUID</code>: The average time per operation increases dramatically (from ~238 ns to ~3785 ns),
+                indicating significant performance degradation and poor scaling under contention.
+            </li>
+        </ul>
+    </li>
+    <li><strong>Consistency:</strong>
+        <ul>
+            <li><code>OpenTelemetry</code> has very small error margins (±0.123 to ±1.215), indicating consistent
+                performance.
+            </li>
+            <li><code>UUID</code> shows much larger variations (±2.242 to ±133.956), especially under load.</li>
+        </ul>
+    </li>
+</ul>
+
+<p>
+    For a complete breakdown of the results across different JDK versions and a deeper analysis of the real-world
+    impact, please see the follow-up post: <a href="/2025/11/15/performance-analysis-trace-id-generation.html">Trace ID
+    Generation: A Performance Analysis of UUID vs. OpenTelemetry</a>.
+</p>
+
+<h2>Best Practices</h2>
+
+<p>When writing JMH benchmarks, keep these points in mind:</p>
+
+<ul>
+    <li>Use <code>Blackhole.consume()</code> to prevent dead code elimination</li>
+    <li>Include proper warmup iterations to ensure JVM optimization</li>
+    <li>Run multiple forks to get statistically significant results</li>
+    <li>Consider external factors like garbage collection and JIT compilation</li>
+    <li>Document the benchmark environment (JVM version, available processors, etc.)</li>
+</ul>
+
+<h2>Conclusion</h2>
+
+<p>
+    JMH is a powerful tool for measuring and comparing code performance on the JVM. While it requires careful setup and
+    interpretation, it provides valuable insights into code performance characteristics. Remember that microbenchmarks
+    should be one of many tools in the performance testing arsenal, alongside profiling and real-world performance
+    testing.
+</p>
+
+<p>
+    The example used in this post can be found in the <a href="https://github.com/GSSwain/benchmark-trace-id-generator">benchmark-trace-id-generator</a>
+    repository.
+</p>
