@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Quarkus and the Java Developer Experience | Girija Swain</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="Quarkus and the Java Developer Experience" />
+<meta name="author" content="Girija Swain" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="This post covers What is Quarkus? Getting started with Quarkus. What is native executable? Building native executable from Java using Quarkus. Startup time difference for Jar and native executables. Hot code replacement for Java (For me this is one of the biggest USP of the framework). What is Quarkus? Quarkus is a full-stack, Kubernetes-native Java framework made for Java virtual machines (JVMs) and native compilation, optimizing Java specifically for containers and enabling it to become an effective platform for serverless, cloud, and Kubernetes environments. Getting started with Quarkus You would need to have Java 8 or Java 11 installed along with Maven to get started with Quarkus. Create a Boilerplate REST project Let’s use the Maven plugin to create a boilerplate mvn io.quarkus:quarkus-maven-plugin:1.8.1.Final:create Now it would ask for the groupId, artifcatId, version to be entered. It would also ask if we want a REST resource (say yes) followed by the classname and the path of the rest resource. This is how it would look like Now we have a Quarkus boilerplate project ready to be build and run. Build the project To create a Jar run the following command. mvn package The build took around 16 seconds. We cover building native executable in the next section. Run the project java -jar target/quarkus-hello-world-1.0-SNAPSHOT-runner.jar Test the project Either use curl or open it on a browser and check curl http://localhost:8080/hello What is native executable? In the world of Java, we compile the source code to Java byte code (Job of javac). When we run this compiled code, the Java byte code is converted to machine specific code (JRE does this). What if we could compile the Java source code to machine specific code and run the machine code directly without a JRE. This is exactly what a native executable is and GraalVM native-image can do this for us. With native executables, we don’t need the JRE to run java code anymore . Those native executables are faster to bootstrap and need less resources to run. The only thing we need to give up is the Write Once Run Anywhere (WORA). That means the code would only run on similar systems on which it was compiled. But wait! Can’t we build for a specific machine and run the code along with that machine? Yes, we could do this with a container-image. So we still get WORA as long as the container run time can run on any machine. Building native executable from Java using Quarkus With Quarkus we can build the following native executables Native executable for our development machine (Won’t run on different OS or even with same OS)Container image with native executable (Runs everywhere where the container runtime is supported) 1. Build native executable for our development machine Following are the steps to create a native executable for your development machine. Install GraalVMSet GRAALVM_HOME environment variableAdd GRAALVM_HOME/bin directory to PATHInstall GraalVM native-image utility (Run gu install native-image)Set up C Langauge environment (Varies for different OS and covered below)Finally run maven package with the native profile enabled (On Windows an extra step is required and covered below) Setting up C On a Mac run the following command xcode-select --install On a Linux based system run the following command # dnf (rpm-based)sudo dnf install gcc glibc-devel zlib-devel libstdc++-static# Debian-based distributions:sudo apt-get install build-essential libz-dev zlib1g-dev On Windows 10, get the Visual Studio 2019 C++ build tools and install the checked optional packages (I have used the community edition) Build native executable For building the native image, we need to run the following command mvn package -Pnative For Windows 10, you must be using the command prompt (does not work on PowerShell yet). You need to run the following batch file before running the native maven build (The path to this file would vary depending upon the version of Visual Studio e.g. 2019, 2017 and if it Community or not) &quot;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat&quot; I have created a cmd file (native-build-windows.cmd) which runs both the commands for me. call &quot;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat&quot; mvn package -Pnative Once you run this, you would get a native executable On Mac, it creates an executable file named quarkus-hello-world-1.0-SNAPSHOT-runner under the target directory. On Windows-10 an exe named quarkus-hello-world-1.0-SNAPSHOT-runner.exe is created under the target diectory. Run this file and do a round of testing. Note this executable will not run on different OS and may not run on different machines with same OS as well. So we need to create a container image which would run irrespective of the OS. 2. Building container image with native executable Let’s start Docker and get going. (Allow file sharing on Docker) Run the following command mvn package -Pnative -Dquarkus.native.container-build=true It would again build an executable but this time if you run it on your own machine, it would fail as the container build happens on the ubi-quarkus-native-image:20.2.0-java11 container. To run the executable, we can create a container image and run that with the following command # Build the imagedocker build -f src/main/docker/Dockerfile.native -t quarkus/quarkus-hello-world . # Run the imagedocker run -i --rm -p 8080:8080 quarkus/quarkus-hello-world This brings ubi8/ubi-minimal:8.1 image as the runtime for the executable. There is an easier way to create the container image. Just add the following Quarkus extension using the below command mvn quarkus:add-extension -Dextensions=quarkus-container-image-jib Run the following command to build the Docker image mvn package -Pnative -Dquarkus.native.container-build=true -Dquarkus.container-image.build=true The build took around 8 minutes. By default the container image group is your user-name of the PC. You can change it with setting a different value for quarkus.container-image.group in the application.properties file Now run the docker image (Replace the container-image-group value) docker run -I --rm -p 8080:8080 &lt;container-image-group&gt;/quarkus-hello-world:1.0-SNAPSHOT Startup time difference for Jar and native executables Here is a quick summary of the startup time for the various kinds of builds and runtime on a Windows 10 with 20GB of RAM with intel i5 processor. The jar version took around 1.773 seconds, the native machine executable started in 0.281 seconds and the native container image started in 0.017 seconds 😊. Hot code replacement for Java Hot code replacement is the idea, where we replace code which is already running. This was always there, SpringBoot Dev-tools does this when the classpath gets updated. The hot code replacement with Quarkus is cool and very similar in experience to the NodeJS based eco-system (with a watch option on source files). It detects the changes on the source files, compiles them and replaces them. Let’s see this in action Start the project in dev mode mvnw quarkus:dev Now let’s return “hi” instead of “hello” (any change would do) and save the file. You would notice the source file change would be detected and it would hot replace the code. This certainly saves a few seconds to minutes (depending on your machine 😜). ❤️ this feature. Conclusion: Quarkus looks really good. I like the way it has given the much needed boost to the Java Developer experience and make us feel more productive. The supported eco-system is also promising (See it for yourself with mvn quarkus:list-extensions). I hope you would give it a try and discover for yourself. References: QuarkusGraalVMDocker &lt;hr&gt;&lt;p&gt;Quarkus and the Java Developer Experience was originally published in The Startup on Medium, where people are continuing the conversation by highlighting and responding to this story.&lt;/p&gt;" />
+<meta property="og:description" content="This post covers What is Quarkus? Getting started with Quarkus. What is native executable? Building native executable from Java using Quarkus. Startup time difference for Jar and native executables. Hot code replacement for Java (For me this is one of the biggest USP of the framework). What is Quarkus? Quarkus is a full-stack, Kubernetes-native Java framework made for Java virtual machines (JVMs) and native compilation, optimizing Java specifically for containers and enabling it to become an effective platform for serverless, cloud, and Kubernetes environments. Getting started with Quarkus You would need to have Java 8 or Java 11 installed along with Maven to get started with Quarkus. Create a Boilerplate REST project Let’s use the Maven plugin to create a boilerplate mvn io.quarkus:quarkus-maven-plugin:1.8.1.Final:create Now it would ask for the groupId, artifcatId, version to be entered. It would also ask if we want a REST resource (say yes) followed by the classname and the path of the rest resource. This is how it would look like Now we have a Quarkus boilerplate project ready to be build and run. Build the project To create a Jar run the following command. mvn package The build took around 16 seconds. We cover building native executable in the next section. Run the project java -jar target/quarkus-hello-world-1.0-SNAPSHOT-runner.jar Test the project Either use curl or open it on a browser and check curl http://localhost:8080/hello What is native executable? In the world of Java, we compile the source code to Java byte code (Job of javac). When we run this compiled code, the Java byte code is converted to machine specific code (JRE does this). What if we could compile the Java source code to machine specific code and run the machine code directly without a JRE. This is exactly what a native executable is and GraalVM native-image can do this for us. With native executables, we don’t need the JRE to run java code anymore . Those native executables are faster to bootstrap and need less resources to run. The only thing we need to give up is the Write Once Run Anywhere (WORA). That means the code would only run on similar systems on which it was compiled. But wait! Can’t we build for a specific machine and run the code along with that machine? Yes, we could do this with a container-image. So we still get WORA as long as the container run time can run on any machine. Building native executable from Java using Quarkus With Quarkus we can build the following native executables Native executable for our development machine (Won’t run on different OS or even with same OS)Container image with native executable (Runs everywhere where the container runtime is supported) 1. Build native executable for our development machine Following are the steps to create a native executable for your development machine. Install GraalVMSet GRAALVM_HOME environment variableAdd GRAALVM_HOME/bin directory to PATHInstall GraalVM native-image utility (Run gu install native-image)Set up C Langauge environment (Varies for different OS and covered below)Finally run maven package with the native profile enabled (On Windows an extra step is required and covered below) Setting up C On a Mac run the following command xcode-select --install On a Linux based system run the following command # dnf (rpm-based)sudo dnf install gcc glibc-devel zlib-devel libstdc++-static# Debian-based distributions:sudo apt-get install build-essential libz-dev zlib1g-dev On Windows 10, get the Visual Studio 2019 C++ build tools and install the checked optional packages (I have used the community edition) Build native executable For building the native image, we need to run the following command mvn package -Pnative For Windows 10, you must be using the command prompt (does not work on PowerShell yet). You need to run the following batch file before running the native maven build (The path to this file would vary depending upon the version of Visual Studio e.g. 2019, 2017 and if it Community or not) &quot;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat&quot; I have created a cmd file (native-build-windows.cmd) which runs both the commands for me. call &quot;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat&quot; mvn package -Pnative Once you run this, you would get a native executable On Mac, it creates an executable file named quarkus-hello-world-1.0-SNAPSHOT-runner under the target directory. On Windows-10 an exe named quarkus-hello-world-1.0-SNAPSHOT-runner.exe is created under the target diectory. Run this file and do a round of testing. Note this executable will not run on different OS and may not run on different machines with same OS as well. So we need to create a container image which would run irrespective of the OS. 2. Building container image with native executable Let’s start Docker and get going. (Allow file sharing on Docker) Run the following command mvn package -Pnative -Dquarkus.native.container-build=true It would again build an executable but this time if you run it on your own machine, it would fail as the container build happens on the ubi-quarkus-native-image:20.2.0-java11 container. To run the executable, we can create a container image and run that with the following command # Build the imagedocker build -f src/main/docker/Dockerfile.native -t quarkus/quarkus-hello-world . # Run the imagedocker run -i --rm -p 8080:8080 quarkus/quarkus-hello-world This brings ubi8/ubi-minimal:8.1 image as the runtime for the executable. There is an easier way to create the container image. Just add the following Quarkus extension using the below command mvn quarkus:add-extension -Dextensions=quarkus-container-image-jib Run the following command to build the Docker image mvn package -Pnative -Dquarkus.native.container-build=true -Dquarkus.container-image.build=true The build took around 8 minutes. By default the container image group is your user-name of the PC. You can change it with setting a different value for quarkus.container-image.group in the application.properties file Now run the docker image (Replace the container-image-group value) docker run -I --rm -p 8080:8080 &lt;container-image-group&gt;/quarkus-hello-world:1.0-SNAPSHOT Startup time difference for Jar and native executables Here is a quick summary of the startup time for the various kinds of builds and runtime on a Windows 10 with 20GB of RAM with intel i5 processor. The jar version took around 1.773 seconds, the native machine executable started in 0.281 seconds and the native container image started in 0.017 seconds 😊. Hot code replacement for Java Hot code replacement is the idea, where we replace code which is already running. This was always there, SpringBoot Dev-tools does this when the classpath gets updated. The hot code replacement with Quarkus is cool and very similar in experience to the NodeJS based eco-system (with a watch option on source files). It detects the changes on the source files, compiles them and replaces them. Let’s see this in action Start the project in dev mode mvnw quarkus:dev Now let’s return “hi” instead of “hello” (any change would do) and save the file. You would notice the source file change would be detected and it would hot replace the code. This certainly saves a few seconds to minutes (depending on your machine 😜). ❤️ this feature. Conclusion: Quarkus looks really good. I like the way it has given the much needed boost to the Java Developer experience and make us feel more productive. The supported eco-system is also promising (See it for yourself with mvn quarkus:list-extensions). I hope you would give it a try and discover for yourself. References: QuarkusGraalVMDocker &lt;hr&gt;&lt;p&gt;Quarkus and the Java Developer Experience was originally published in The Startup on Medium, where people are continuing the conversation by highlighting and responding to this story.&lt;/p&gt;" />
+<link rel="canonical" href="https://gsswain.com/2020/09/20/quarkus-and-the-java-developer-experience.html" />
+<meta property="og:url" content="https://gsswain.com/2020/09/20/quarkus-and-the-java-developer-experience.html" />
+<meta property="og:site_name" content="Girija Swain" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-09-20T00:00:00+00:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Quarkus and the Java Developer Experience" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Girija Swain"},"dateModified":"2020-09-20T00:00:00+00:00","datePublished":"2020-09-20T00:00:00+00:00","description":"This post covers What is Quarkus? Getting started with Quarkus. What is native executable? Building native executable from Java using Quarkus. Startup time difference for Jar and native executables. Hot code replacement for Java (For me this is one of the biggest USP of the framework). What is Quarkus? Quarkus is a full-stack, Kubernetes-native Java framework made for Java virtual machines (JVMs) and native compilation, optimizing Java specifically for containers and enabling it to become an effective platform for serverless, cloud, and Kubernetes environments. Getting started with Quarkus You would need to have Java 8 or Java 11 installed along with Maven to get started with Quarkus. Create a Boilerplate REST project Let’s use the Maven plugin to create a boilerplate mvn io.quarkus:quarkus-maven-plugin:1.8.1.Final:create Now it would ask for the groupId, artifcatId, version to be entered. It would also ask if we want a REST resource (say yes) followed by the classname and the path of the rest resource. This is how it would look like Now we have a Quarkus boilerplate project ready to be build and run. Build the project To create a Jar run the following command. mvn package The build took around 16 seconds. We cover building native executable in the next section. Run the project java -jar target/quarkus-hello-world-1.0-SNAPSHOT-runner.jar Test the project Either use curl or open it on a browser and check curl http://localhost:8080/hello What is native executable? In the world of Java, we compile the source code to Java byte code (Job of javac). When we run this compiled code, the Java byte code is converted to machine specific code (JRE does this). What if we could compile the Java source code to machine specific code and run the machine code directly without a JRE. This is exactly what a native executable is and GraalVM native-image can do this for us. With native executables, we don’t need the JRE to run java code anymore . Those native executables are faster to bootstrap and need less resources to run. The only thing we need to give up is the Write Once Run Anywhere (WORA). That means the code would only run on similar systems on which it was compiled. But wait! Can’t we build for a specific machine and run the code along with that machine? Yes, we could do this with a container-image. So we still get WORA as long as the container run time can run on any machine. Building native executable from Java using Quarkus With Quarkus we can build the following native executables Native executable for our development machine (Won’t run on different OS or even with same OS)Container image with native executable (Runs everywhere where the container runtime is supported) 1. Build native executable for our development machine Following are the steps to create a native executable for your development machine. Install GraalVMSet GRAALVM_HOME environment variableAdd GRAALVM_HOME/bin directory to PATHInstall GraalVM native-image utility (Run gu install native-image)Set up C Langauge environment (Varies for different OS and covered below)Finally run maven package with the native profile enabled (On Windows an extra step is required and covered below) Setting up C On a Mac run the following command xcode-select --install On a Linux based system run the following command # dnf (rpm-based)sudo dnf install gcc glibc-devel zlib-devel libstdc++-static# Debian-based distributions:sudo apt-get install build-essential libz-dev zlib1g-dev On Windows 10, get the Visual Studio 2019 C++ build tools and install the checked optional packages (I have used the community edition) Build native executable For building the native image, we need to run the following command mvn package -Pnative For Windows 10, you must be using the command prompt (does not work on PowerShell yet). You need to run the following batch file before running the native maven build (The path to this file would vary depending upon the version of Visual Studio e.g. 2019, 2017 and if it Community or not) &quot;C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat&quot; I have created a cmd file (native-build-windows.cmd) which runs both the commands for me. call &quot;C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build\\vcvars64.bat&quot; mvn package -Pnative Once you run this, you would get a native executable On Mac, it creates an executable file named quarkus-hello-world-1.0-SNAPSHOT-runner under the target directory. On Windows-10 an exe named quarkus-hello-world-1.0-SNAPSHOT-runner.exe is created under the target diectory. Run this file and do a round of testing. Note this executable will not run on different OS and may not run on different machines with same OS as well. So we need to create a container image which would run irrespective of the OS. 2. Building container image with native executable Let’s start Docker and get going. (Allow file sharing on Docker) Run the following command mvn package -Pnative -Dquarkus.native.container-build=true It would again build an executable but this time if you run it on your own machine, it would fail as the container build happens on the ubi-quarkus-native-image:20.2.0-java11 container. To run the executable, we can create a container image and run that with the following command # Build the imagedocker build -f src/main/docker/Dockerfile.native -t quarkus/quarkus-hello-world . # Run the imagedocker run -i --rm -p 8080:8080 quarkus/quarkus-hello-world This brings ubi8/ubi-minimal:8.1 image as the runtime for the executable. There is an easier way to create the container image. Just add the following Quarkus extension using the below command mvn quarkus:add-extension -Dextensions=quarkus-container-image-jib Run the following command to build the Docker image mvn package -Pnative -Dquarkus.native.container-build=true -Dquarkus.container-image.build=true The build took around 8 minutes. By default the container image group is your user-name of the PC. You can change it with setting a different value for quarkus.container-image.group in the application.properties file Now run the docker image (Replace the container-image-group value) docker run -I --rm -p 8080:8080 &lt;container-image-group&gt;/quarkus-hello-world:1.0-SNAPSHOT Startup time difference for Jar and native executables Here is a quick summary of the startup time for the various kinds of builds and runtime on a Windows 10 with 20GB of RAM with intel i5 processor. The jar version took around 1.773 seconds, the native machine executable started in 0.281 seconds and the native container image started in 0.017 seconds 😊. Hot code replacement for Java Hot code replacement is the idea, where we replace code which is already running. This was always there, SpringBoot Dev-tools does this when the classpath gets updated. The hot code replacement with Quarkus is cool and very similar in experience to the NodeJS based eco-system (with a watch option on source files). It detects the changes on the source files, compiles them and replaces them. Let’s see this in action Start the project in dev mode mvnw quarkus:dev Now let’s return “hi” instead of “hello” (any change would do) and save the file. You would notice the source file change would be detected and it would hot replace the code. This certainly saves a few seconds to minutes (depending on your machine 😜). ❤️ this feature. Conclusion: Quarkus looks really good. I like the way it has given the much needed boost to the Java Developer experience and make us feel more productive. The supported eco-system is also promising (See it for yourself with mvn quarkus:list-extensions). I hope you would give it a try and discover for yourself. References: QuarkusGraalVMDocker &lt;hr&gt;&lt;p&gt;Quarkus and the Java Developer Experience was originally published in The Startup on Medium, where people are continuing the conversation by highlighting and responding to this story.&lt;/p&gt;","headline":"Quarkus and the Java Developer Experience","mainEntityOfPage":{"@type":"WebPage","@id":"https://gsswain.com/2020/09/20/quarkus-and-the-java-developer-experience.html"},"url":"https://gsswain.com/2020/09/20/quarkus-and-the-java-developer-experience.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <link rel="canonical" href="https://gsswain.com/2020/09/20/quarkus-and-the-java-developer-experience.html">
+  <link rel="alternate" type="application/rss+xml" title="Girija Swain" href="/feed.xml">
+  
+  <!-- Google Analytics -->
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NK9JKFXRK7"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-NK9JKFXRK7');
+  </script>
+  
+
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="container">
+      <nav class="site-nav">
+        <div class="nav-brand">
+          <a class="site-title" href="/">
+            Girija Swain
+          </a>
+          <!-- <p class="site-tagline">Digital Transformation Specialist</p> -->
+        </div>
+        
+        <div class="nav-menu">
+          <ul class="nav-links">
+            
+            <li class="nav-item">
+              <a href="/" 
+                 class="nav-link">
+                Home
+              </a>
+            </li>
+            
+            <li class="nav-item">
+              <a href="/about/" 
+                 class="nav-link">
+                About
+              </a>
+            </li>
+            
+            <li class="nav-item">
+              <a href="/case-studies/" 
+                 class="nav-link">
+                Case Studies
+              </a>
+            </li>
+            
+            <li class="nav-item">
+              <a href="/blog/" 
+                 class="nav-link">
+                Blog
+              </a>
+            </li>
+            
+            <li class="nav-item">
+              <a href="/contact/" 
+                 class="nav-link">
+                Contact
+              </a>
+            </li>
+            
+          </ul>
+          
+          <div class="nav-social">
+            <a href="https://linkedin.com/in/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-linkedin"></i>
+            </a>
+            <a href="https://github.com/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-github"></i>
+            </a>
+            <a href="https://stackoverflow.com/users/4601120/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-stack-overflow"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div class="nav-toggle">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <div class="container">
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">Quarkus and the Java Developer Experience</h1>
+      <div class="post-meta">
+        <time datetime="2020-09-20T00:00:00+00:00">
+          September 20, 2020
+        </time>
+        
+        <span class="post-author">by Girija Swain</span>
+        
+        
+        <div class="post-tags">
+          
+          <span class="tag">containers</span>
+          
+          <span class="tag">java</span>
+          
+          <span class="tag">graalvm</span>
+          
+          <span class="tag">developer-experience</span>
+          
+          <span class="tag">quarkus</span>
+          
+        </div>
+        
+      </div>
+    </header>
+
+    <div class="post-content">
+      <figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*4Oxs97dZeDJuT4UnvIAc9g.jpeg" /></figure><p>This post covers </p><ul><li>What is Quarkus? </li><li>Getting started with Quarkus. </li><li>What is native executable? </li><li>Building <em>native executable from Java using Quarkus</em>. </li><li>Startup time difference for Jar and native executables. </li><li><em>Hot code replacement</em> for Java (For me this is one of the biggest USP of the framework). </li></ul><h3>What is Quarkus?</h3><blockquote>Quarkus is a full-stack, Kubernetes-native <a href="https://www.redhat.com/en/topics/cloud-native-apps/what-is-a-Java-framework">Java framework</a> made for Java virtual machines (JVMs) and native compilation, optimizing Java specifically for containers and enabling it to become an effective platform for <a href="https://www.redhat.com/en/topics/cloud-native-apps/what-is-serverless">serverless</a>, <a href="https://www.redhat.com/en/topics/cloud">cloud</a>, and <a href="https://www.redhat.com/en/topics/containers/what-is-kubernetes">Kubernetes</a> environments.</blockquote><h3>Getting started with Quarkus</h3><p>You would need to have Java 8 or Java 11 installed along with Maven to get started with Quarkus.</p><h4>Create a Boilerplate REST project</h4><p>Let’s use the Maven plugin to create a boilerplate</p><pre>mvn io.quarkus:quarkus-maven-plugin:1.8.1.Final:create</pre><p>Now it would ask for the <em>groupId, artifcatId, version </em>to be entered. It would also ask if we want a REST resource (say yes) followed by the <em>classname</em> and the <em>path</em> of the rest resource. This is how it would look like</p><figure><img alt="" src="https://cdn-images-1.medium.com/max/1016/1*Ynag2d-Mio8ptTapuA2MHQ.png" /></figure><p>Now we have a Quarkus boilerplate project ready to be build and run.</p><h4>Build the project</h4><p>To create a Jar run the following command.</p><p>mvn package</p><figure><img alt="" src="https://cdn-images-1.medium.com/max/1004/1*E0Wnq1tElKnKdakJCK6aaQ.jpeg" /></figure><p>The build took around <strong>16 seconds</strong>.</p><p>We cover building <em>native executable</em> in the next section.</p><h4>Run the project</h4><p>java -jar target/quarkus-hello-world-1.0-SNAPSHOT-runner.jar</p><h4>Test the project</h4><p>Either use curl or open it on a browser and check</p><p>curl <a href="http://localhost:8080/hello">http://localhost:8080/hello</a></p><figure><img alt="" src="https://cdn-images-1.medium.com/max/904/1*vB8gHFcpTJ3Uahle9dzxgQ.png" /></figure><h3>What is native executable?</h3><p>In the world of Java, we compile the source code to Java byte code (Job of <em>javac</em>). When we run this compiled code, the Java byte code is converted to machine specific code (<em>JRE</em> does this). What if we could compile the Java source code to machine specific code and run the machine code directly without a JRE. This is exactly what a native executable is and <strong><em>GraalVM</em></strong> <em>native-image</em> can do this for us.</p><blockquote>With native executables, we don’t need the JRE to run java code anymore . Those native executables are <strong>faster to bootstrap</strong> and <strong>need less resources to run</strong>. The only thing we need to give up is the <strong>Write</strong> <strong>Once Run Anywhere (WORA)</strong>. That means the code would only run on similar systems on which it was compiled. But wait! Can’t we build for a specific machine and run the code along with that machine? Yes, we could do this with a <strong>container-image</strong>. So we still get WORA as long as the <strong>container run time can run on any machine</strong>.</blockquote><h3>Building native executable from Java using Quarkus</h3><p>With Quarkus we can build the following native executables</p><ol><li>Native executable for our development machine (Won’t run on different OS or even with same OS)</li><li>Container image with native executable (Runs everywhere where the container runtime is supported)</li></ol><h3>1. Build native executable for our development machine</h3><p>Following are the steps to create a native executable for your development machine.</p><ul><li><a href="https://www.graalvm.org/docs/getting-started-with-graalvm/#install-graalvm">Install GraalVM</a></li><li>Set <em>GRAALVM_HOME </em>environment variable</li><li>Add <em>GRAALVM_HOME/bin </em>directory to<em> PATH</em></li><li>Install GraalVM <em>native-image</em> utility (Run gu install native-image)</li><li>Set up <em>C </em>Langauge environment (Varies for different OS and covered below)</li><li>Finally run maven package with the native profile enabled (On Windows an extra step is required and covered below)</li></ul><h4>Setting up C</h4><p>On a Mac run the following command</p><pre>xcode-select --install</pre><p>On a Linux based system run the following command</p><pre># dnf (rpm-based)<br>sudo dnf install gcc glibc-devel zlib-devel libstdc++-static<br># Debian-based distributions:<br>sudo apt-get install build-essential libz-dev zlib1g-dev</pre><p>On Windows 10, get the <em>Visual Studio 2019 C++ build tools</em> and install the checked optional packages (I have used the community edition)</p><figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*4_v2StXKD9p7G7k6wZhBsQ.jpeg" /></figure><h4>Build native executable</h4><p>For building the native image, we need to run the following command</p><p>mvn package -Pnative</p><p>For Windows 10, you <strong>must be using the command prompt</strong> (does not work on PowerShell yet). You need to run the following batch file before running the native maven build (The path to this file would vary depending upon the version of Visual Studio e.g. 2019, 2017 and if it Community or not)</p><pre>&quot;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat&quot;</pre><p>I have created a cmd file (native-build-windows.cmd) which runs both the commands for me.</p><pre>call &quot;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat&quot;</pre><pre>mvn package -Pnative</pre><p>Once you run this, you would get a native executable</p><p>On Mac, it creates an executable file named quarkus-hello-world-1.0-SNAPSHOT-runner under the target directory.</p><p>On Windows-10 an <em>exe </em>named<em> </em>quarkus-hello-world-1.0-SNAPSHOT-runner.exe is created under the target diectory.</p><p>Run this file and do a round of testing. Note this executable will not run on different OS and may not run on different machines with same OS as well. So we need to create a container image which would run irrespective of the OS.</p><h3>2. Building container image with native executable</h3><p>Let’s start Docker and get going. (Allow file sharing on Docker)</p><p>Run the following command</p><p>mvn package -Pnative -Dquarkus.native.container-build=true</p><p>It would again build an executable but this time if you run it on your own machine, it would fail as the container build happens on the ubi-quarkus-native-image:20.2.0-java11 container.</p><p>To run the executable, we can create a container image and run that with the following command</p><pre># Build the image<br>docker build -f src/main/docker/Dockerfile.native -t quarkus/quarkus-hello-world .</pre><pre># Run the image<br>docker run -i --rm -p 8080:8080 quarkus/quarkus-hello-world</pre><p>This brings ubi8/ubi-minimal:8.1 image as the runtime for the executable.</p><p>There is an easier way to create the container image. Just add the following Quarkus extension using the below command</p><p>mvn quarkus:add-extension -Dextensions=quarkus-container-image-jib</p><p>Run the following command to build the Docker image</p><pre>mvn package -Pnative -Dquarkus.native.container-build=true -Dquarkus.container-image.build=true</pre><figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*LFAA1qIqyN2osZoGSSCz3g.jpeg" /></figure><p>The build took around <strong>8 minutes</strong>.</p><p>By default the container image group is your user-name of the PC. You can change it with setting a different value for quarkus.container-image.group in the application.properties file</p><p>Now run the docker image (Replace the container-image-group value)</p><p>docker run -I --rm -p 8080:8080 &lt;container-image-group&gt;/quarkus-hello-world:1.0-SNAPSHOT</p><h3>Startup time difference for Jar and native executables</h3><p>Here is a quick summary of the startup time for the various kinds of builds and runtime on a Windows 10 with 20GB of RAM with intel i5 processor.</p><p>The <strong>jar</strong> version took around<strong> 1.773 seconds</strong>, the <strong>native machine executable</strong> started in <strong>0.281 seconds</strong> and the <strong>native container image</strong> started in <strong>0.017 seconds</strong> 😊.</p><figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*GEywE23svFHY4miD8gxgXw.jpeg" /></figure><h3>Hot code replacement for Java</h3><p>Hot code replacement is the idea, where we replace code which is already running. This was always there, <a href="https://docs.spring.io/spring-boot/docs/current/reference/html/using-spring-boot.html#using-boot-devtools">SpringBoot Dev-tools</a> does this when the <em>classpath</em> gets updated. The hot code replacement with Quarkus is cool and very similar in experience to the NodeJS based eco-system (with a watch option on source files). It detects the changes on the source files, compiles them and replaces them.</p><p>Let’s see this in action</p><p>Start the project in dev mode</p><pre>mvnw quarkus:dev</pre><figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*PwpeEFL-tvSlsne5sx2Wbg.jpeg" /></figure><p>Now let’s return “<em>hi” </em>instead of <em>“hello” </em>(any change would do) and save the file. You would notice the source file change would be detected and it would hot replace the code.</p><figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*ZlLQK8WzoOJurGzC55xa7g.jpeg" /></figure><p>This certainly saves a few seconds to minutes (depending on your machine 😜). ❤️ this feature.</p><h3>Conclusion:</h3><p>Quarkus looks really good. I like the way it has given the much needed boost to the Java Developer experience and make us feel more productive. The supported eco-system is also promising (See it for yourself with mvn quarkus:list-extensions). I hope you would give it a try and discover for yourself.</p><h3>References:</h3><ul><li><a href="https://quarkus.io">Quarkus</a></li><li><a href="https://www.graalvm.org/why-graalvm/">GraalVM</a></li><li><a href="https://www.docker.com">Docker</a></li></ul><img src="https://medium.com/_/stat?event=post.clientViewed&referrerSource=full_rss&postId=b9817fe4e3d7" width="1" height="1" alt=""><hr><p><a href="https://medium.com/swlh/quarkus-and-the-java-developer-experience-b9817fe4e3d7">Quarkus and the Java Developer Experience</a> was originally published in <a href="https://medium.com/swlh">The Startup</a> on Medium, where people are continuing the conversation by highlighting and responding to this story.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      <div class="post-sharing">
+        <h4>Share this post</h4>
+        <div class="sharing-buttons">
+          <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fgsswain.com%2F2020%2F09%2F20%2Fquarkus-and-the-java-developer-experience.html&text=Quarkus+and+the+Java+Developer+Experience" 
+             target="_blank" rel="noopener" class="share-btn twitter">
+            <i class="fab fa-twitter"></i> Twitter
+          </a>
+          <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fgsswain.com%2F2020%2F09%2F20%2Fquarkus-and-the-java-developer-experience.html" 
+             target="_blank" rel="noopener" class="share-btn linkedin">
+            <i class="fab fa-linkedin"></i> LinkedIn
+          </a>
+        </div>
+      </div>
+
+      <div class="post-navigation">
+        
+        <div class="prev-post">
+          <span class="nav-label">Previous Post</span>
+          <a href="/2020/07/28/rest-graphql-beyond-bffs.html">REST + GraphQL (beyond BFFs)</a>
+        </div>
+        
+        
+        
+        <div class="next-post">
+          <span class="nav-label">Next Post</span>
+          <a href="/2021/03/14/serverless-pdf-generation-from-html-wysiwyg-as-pdf.html">Serverless PDF Generation from HTML (WYSIWYG as PDF)</a>
+        </div>
+        
+      </div>
+
+      <div class="author-bio">
+        <div class="author-avatar">
+          <img src="/assets/images/avatar.jpeg" alt="Girija Swain" />
+        </div>
+        <div class="author-info">
+          <h4>About the Author</h4>
+          <p>Girija Swain is a Lead Engineer and Digital Transformation Specialist with 15+ years of experience in enterprise software architecture, cloud-native systems, and engineering leadership.</p>
+          <div class="author-links">
+            <a href="/about/">Learn More</a>
+            <a href="https://linkedin.com/in/gsswain">Connect on LinkedIn</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </article>
+</div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>Girija Swain</h3>
+          <div class="footer-social">
+            <a href="https://linkedin.com/in/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-linkedin"></i>
+            </a>
+            <a href="https://github.com/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-github"></i>
+            </a>
+            <a href="https://stackoverflow.com/users/4601120/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-stack-overflow"></i>
+            </a>
+            <a href="mailto:contact@gsswain.com">
+              <i class="fas fa-envelope"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="/about/">About</a></li>
+            <li><a href="/case-studies/">Case Studies</a></li>
+            <li><a href="/blog/">Blog</a></li>
+            <li><a href="/contact/">Contact</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Expertise</h4>
+          <ul>
+            <li>Digital Transformation</li>
+            <li>Technology Leadership</li>
+            <li>Cloud Architecture</li>
+            <li>Microservices</li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Recognition</h4>
+          <ul>
+            <li>Top 7% Stack Overflow</li>
+            <li>GCP Professional Architect</li>
+            <li>AWS Solutions Architect</li>
+            <li>15+ Years Experience</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2025 Girija Swain. All rights reserved.</p>
+        <p>Built with Jekyll • Hosted on GitHub Pages</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>
