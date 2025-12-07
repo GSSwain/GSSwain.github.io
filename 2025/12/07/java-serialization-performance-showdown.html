@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Java Serialization Performance Showdown | Girija Swain</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="Java Serialization Performance Showdown" />
+<meta name="author" content="Girija Swain" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Java Serialization Performance Showdown" />
+<meta property="og:description" content="Java Serialization Performance Showdown" />
+<link rel="canonical" href="https://gsswain.com/2025/12/07/java-serialization-performance-showdown.html" />
+<meta property="og:url" content="https://gsswain.com/2025/12/07/java-serialization-performance-showdown.html" />
+<meta property="og:site_name" content="Girija Swain" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2025-12-07T00:00:00+00:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Java Serialization Performance Showdown" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Girija Swain"},"dateModified":"2025-12-07T00:00:00+00:00","datePublished":"2025-12-07T00:00:00+00:00","description":"Java Serialization Performance Showdown","headline":"Java Serialization Performance Showdown","mainEntityOfPage":{"@type":"WebPage","@id":"https://gsswain.com/2025/12/07/java-serialization-performance-showdown.html"},"url":"https://gsswain.com/2025/12/07/java-serialization-performance-showdown.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <link rel="canonical" href="https://gsswain.com/2025/12/07/java-serialization-performance-showdown.html">
+  <link rel="alternate" type="application/rss+xml" title="Girija Swain" href="/feed.xml">
+  
+  <!-- Google Analytics -->
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NK9JKFXRK7"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-NK9JKFXRK7');
+  </script>
+  
+
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="container">
+      <nav class="site-nav">
+        <div class="nav-brand">
+          <a class="site-title" href="/">
+            Girija Swain
+          </a>
+          <!-- <p class="site-tagline">Digital Transformation Specialist</p> -->
+        </div>
+        
+        <div class="nav-menu">
+          <ul class="nav-links">
+            
+            <li class="nav-item">
+              <a href="/" 
+                 class="nav-link">
+                Home
+              </a>
+            </li>
+            
+            <li class="nav-item">
+              <a href="/about/" 
+                 class="nav-link">
+                About
+              </a>
+            </li>
+            
+            <li class="nav-item">
+              <a href="/case-studies/" 
+                 class="nav-link">
+                Case Studies
+              </a>
+            </li>
+            
+            <li class="nav-item">
+              <a href="/blog/" 
+                 class="nav-link">
+                Blog
+              </a>
+            </li>
+            
+            <li class="nav-item">
+              <a href="/contact/" 
+                 class="nav-link">
+                Contact
+              </a>
+            </li>
+            
+          </ul>
+          
+          <div class="nav-social">
+            <a href="https://linkedin.com/in/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-linkedin"></i>
+            </a>
+            <a href="https://github.com/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-github"></i>
+            </a>
+            <a href="https://stackoverflow.com/users/4601120/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-stack-overflow"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div class="nav-toggle">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-content">
+    <div class="container">
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">Java Serialization Performance Showdown</h1>
+      <div class="post-meta">
+        <time datetime="2025-12-07T00:00:00+00:00">
+          December 07, 2025
+        </time>
+        
+        <span class="post-author">by Girija Swain</span>
+        
+        
+      </div>
+    </header>
+
+    <div class="post-content">
+      <h3 id="java-serialization-performance-showdown">Java Serialization Performance Showdown</h3>
+
+<p>In the world of modern software engineering, data is constantly in motion. It’s sent over networks between microservices, stored in caches, and persisted in databases. The process of converting in-memory objects into a format suitable for transmission or storage is called <strong>serialization</strong>, and its counterpart, <strong>deserialization</strong>, is the process of converting it back.</p>
+
+<p>Choosing the right serialization format is a critical architectural decision. It can have a profound impact on your application’s performance, network bandwidth consumption, and even ease of debugging. While JSON has become the de facto standard for its human-readability and ubiquity, is it always the right choice?</p>
+
+<p>To answer this, we ran a comprehensive benchmark comparing some of the most popular serialization frameworks in the Java ecosystem.</p>
+
+<h3 id="the-contenders">The Contenders</h3>
+
+<p>We pitted four major players against each other, using the Java Microbenchmark Harness (JMH) to ensure accurate and reliable results.</p>
+
+<ol>
+  <li><strong>JSON (Jackson):</strong> The undisputed champion of web APIs and configuration files. It’s text-based, human-readable, and supported by virtually every language and platform.</li>
+  <li><strong>Protocol Buffers (Protobuf):</strong> Google’s binary serialization format. It’s schema-first, meaning you define your data structures in a <code class="language-plaintext highlighter-rouge">.proto</code> file, and it’s designed for high performance and compact payloads.</li>
+  <li><strong>Apache Avro (Binary):</strong> A powerful binary serialization format from the Apache ecosystem, widely used in big data platforms like Kafka and Hadoop. It also uses a schema-first approach but with more dynamic capabilities.</li>
+  <li><strong>Apache Avro (JSON):</strong> Avro also supports a JSON encoding. This provides a human-readable format while still leveraging Avro’s schema management capabilities.</li>
+</ol>
+
+<h3 id="the-test-subject-a-real-world-socialmediapost">The Test Subject: A Real-World <code class="language-plaintext highlighter-rouge">SocialMediaPost</code></h3>
+
+<p>To ensure our benchmarks reflect real-world scenarios, we used a moderately complex <code class="language-plaintext highlighter-rouge">SocialMediaPost</code> object. This object was designed to include a mix of data types and structures that are common in modern applications, such as:</p>
+
+<ul>
+  <li><strong>Primitive types:</strong> Strings, longs</li>
+  <li><strong>A list of strings:</strong> <code class="language-plaintext highlighter-rouge">likes</code></li>
+  <li><strong>A list of nested objects:</strong> <code class="language-plaintext highlighter-rouge">comments</code> and <code class="language-plaintext highlighter-rouge">mediaAttachments</code></li>
+</ul>
+
+<p>Here is a sample of the <code class="language-plaintext highlighter-rouge">SocialMediaPost</code> object in JSON format:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"postId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"authorId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="mi">1678886400000</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"mediaAttachments"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"IMAGE"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"http://example.com/some-random-image.jpg"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"VIDEO"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"http://example.com/some-random-video.mp4"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">],</span><span class="w">
+  </span><span class="nl">"likes"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"some-random-string"</span><span class="w">
+  </span><span class="p">],</span><span class="w">
+  </span><span class="nl">"comments"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"commentId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"commenterId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"commentText"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="mi">1678886400000</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"commentId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"commenterId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"commentText"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="mi">1678886400000</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>By using an object with this level of complexity, we can be more confident that our benchmark results are representative of the performance you might see in your own applications. The benchmarks were run across multiple JDK versions (17, 21, and 25) to see how performance varies.</p>
+
+<h3 id="the-results-a-deep-dive">The Results: A Deep Dive</h3>
+
+<p>You can explore the full, interactive results yourself on <a href="https://jmh.morethan.io/?gist=c724d78f175ebf8daa62761a138ff9ff">jmh.morethan.io</a>. The raw data for the JMH report is also available in the <a href="https://gist.github.com/GSSwain/c724d78f175ebf8daa62761a138ff9ff">Gist</a>. But here’s the breakdown of what we found.</p>
+
+<h4 id="serialization-the-need-for-speed">Serialization: The Need for Speed</h4>
+
+<p>When it comes to writing data, speed is paramount. Here, the binary formats demonstrated a staggering advantage.</p>
+
+<ul>
+  <li><strong>Winner:</strong> <strong>Protobuf</strong> and <strong>Avro Binary</strong> were neck-and-neck for the top spot, consistently clocking in as the fastest formats. On average, they took around <strong>400-600 nanoseconds</strong> per operation.</li>
+  <li><strong>Middle Ground:</strong> <strong>Jackson JSON</strong> was significantly slower, taking roughly <strong>1100-1200 ns/op</strong>—more than twice as long as the binary leaders.</li>
+  <li><strong>Slowest:</strong> <strong>Avro JSON</strong> was the clear laggard in the serialization race, requiring over <strong>4000 ns/op</strong>.</li>
+</ul>
+
+<p><strong>Key Takeaway:</strong> The overhead of converting data to a text-based format like JSON is substantial. Binary formats are dramatically more efficient.</p>
+
+<h4 id="deserialization-reading-the-data">Deserialization: Reading the Data</h4>
+
+<p>The story here is very similar.</p>
+
+<ul>
+  <li><strong>Winner:</strong> <strong>Protobuf</strong> was the undisputed champion, consistently deserializing the object in around <strong>700 ns/op</strong>.</li>
+  <li><strong>Runner-Up:</strong> <strong>Avro Binary</strong> was not far behind, but Protobuf maintained a consistent edge.</li>
+  <li><strong>The Rest:</strong> <strong>Jackson JSON</strong> and <strong>Avro JSON</strong> were again much slower, taking <strong>~1600 ns/op</strong> and <strong>~5900 ns/op</strong>, respectively.</li>
+</ul>
+
+<p><strong>Key Takeaway:</strong> For performance-critical applications, Protobuf offers a clear and measurable advantage. The cost of parsing text, validating syntax, and mapping fields is significant compared to the direct, structured approach of binary formats.</p>
+
+<h3 id="beyond-speed-payload-size-matters">Beyond Speed: Payload Size Matters</h3>
+
+<p>Performance isn’t just about CPU time; it’s also about resource utilization. A key, unmeasured factor in the JMH report is the size of the serialized payload.</p>
+
+<ul>
+  <li><strong>Binary Formats (Protobuf, Avro Binary):</strong> Produce highly compact payloads. In our tests, the object was serialized to <strong>~750 bytes</strong>.</li>
+  <li><strong>Text Formats (JSON, Avro JSON):</strong> Are much more verbose, resulting in a payload size of <strong>~1220 bytes</strong>—over 60% larger!</li>
+</ul>
+
+<p>This difference is crucial. Smaller payloads mean less network bandwidth consumption, and faster transmission times, especially for large objects or high-throughput systems.</p>
+
+<h3 id="conclusion-which-format-should-you-choose">Conclusion: Which Format Should You Choose?</h3>
+
+<p>Based on the data, here are our recommendations:</p>
+
+<ol>
+  <li><strong>For High-Performance Internal Services (RPC, Microservices):</strong>
+    <ul>
+      <li><strong>Choose Protobuf or Avro Binary.</strong> The performance gains in both serialization and deserialization are too significant to ignore. Protobuf often has a slight edge in raw speed, while Avro’s schema evolution capabilities are top-notch.</li>
+    </ul>
+  </li>
+  <li><strong>For Public APIs and Web Frontends:</strong>
+    <ul>
+      <li><strong>Stick with JSON.</strong> Its human-readability, vast ecosystem, and ease of debugging make it the ideal choice for interfaces that are consumed by external clients or browser applications. The performance trade-off is acceptable for the gain in usability.</li>
+    </ul>
+  </li>
+  <li><strong>For Big Data and Streaming Pipelines (e.g., Kafka):</strong>
+    <ul>
+      <li><strong>Strongly consider Avro.</strong> While Protobuf is fast, Avro was practically designed for this world. Its robust schema evolution support is a massive advantage in environments where data structures change over time.</li>
+    </ul>
+  </li>
+</ol>
+
+<p>The great serialization debate doesn’t have a single winner, but it does have clear use cases. By understanding the trade-offs between performance, payload size, and usability, you can make an informed decision that best fits your needs.</p>
+
+<hr />
+<p><strong>Want to run the benchmarks yourself?</strong> Check out the full project on GitHub at <a href="https://github.com/GSSwain/benchmark-serialization-deserialization">GSSwain/benchmark-serialization-deserialization</a> and dive into the code.</p>
+
+    </div>
+
+    <footer class="post-footer">
+      <div class="post-sharing">
+        <h4>Share this post</h4>
+        <div class="sharing-buttons">
+          <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fgsswain.com%2F2025%2F12%2F07%2Fjava-serialization-performance-showdown.html&text=Java+Serialization+Performance+Showdown" 
+             target="_blank" rel="noopener" class="share-btn twitter">
+            <i class="fab fa-twitter"></i> Twitter
+          </a>
+          <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fgsswain.com%2F2025%2F12%2F07%2Fjava-serialization-performance-showdown.html" 
+             target="_blank" rel="noopener" class="share-btn linkedin">
+            <i class="fab fa-linkedin"></i> LinkedIn
+          </a>
+        </div>
+      </div>
+
+      <div class="post-navigation">
+        
+        <div class="prev-post">
+          <span class="nav-label">Previous Post</span>
+          <a href="/2025/11/15/performance-analysis-trace-id-generation.html">Trace ID Generation: A Performance Analysis of UUID vs. OpenTelemetry</a>
+        </div>
+        
+        
+        
+      </div>
+
+      <div class="author-bio">
+        <div class="author-avatar">
+          <img src="/assets/images/avatar.jpeg" alt="Girija Swain" />
+        </div>
+        <div class="author-info">
+          <h4>About the Author</h4>
+          <p>Girija Swain is a Lead Engineer and Digital Transformation Specialist with 15+ years of experience in enterprise software architecture, cloud-native systems, and engineering leadership.</p>
+          <div class="author-links">
+            <a href="/about/">Learn More</a>
+            <a href="https://linkedin.com/in/gsswain">Connect on LinkedIn</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </article>
+</div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>Girija Swain</h3>
+          <div class="footer-social">
+            <a href="https://linkedin.com/in/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-linkedin"></i>
+            </a>
+            <a href="https://github.com/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-github"></i>
+            </a>
+            <a href="https://stackoverflow.com/users/4601120/gsswain" target="_blank" rel="noopener">
+              <i class="fab fa-stack-overflow"></i>
+            </a>
+            <a href="mailto:contact@gsswain.com">
+              <i class="fas fa-envelope"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="/about/">About</a></li>
+            <li><a href="/case-studies/">Case Studies</a></li>
+            <li><a href="/blog/">Blog</a></li>
+            <li><a href="/contact/">Contact</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Expertise</h4>
+          <ul>
+            <li>Digital Transformation</li>
+            <li>Technology Leadership</li>
+            <li>Cloud Architecture</li>
+            <li>Microservices</li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Recognition</h4>
+          <ul>
+            <li>Top 7% Stack Overflow</li>
+            <li>GCP Professional Architect</li>
+            <li>AWS Solutions Architect</li>
+            <li>15+ Years Experience</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2025 Girija Swain. All rights reserved.</p>
+        <p>Built with Jekyll • Hosted on GitHub Pages</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

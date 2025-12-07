@@ -1,0 +1,1266 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.10.0">Jekyll</generator><link href="https://gsswain.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://gsswain.com/" rel="alternate" type="text/html" /><updated>2025-12-07T10:34:26+00:00</updated><id>https://gsswain.com/feed.xml</id><title type="html">Girija Swain</title><subtitle>15+ years of experience solving complex business problems through innovative  technology solutions and exceptional leadership. Specializing in cloud-native  architectures, microservices, and leading high-performing engineering teams.</subtitle><entry><title type="html">Java Serialization Performance Showdown</title><link href="https://gsswain.com/2025/12/07/java-serialization-performance-showdown.html" rel="alternate" type="text/html" title="Java Serialization Performance Showdown" /><published>2025-12-07T00:00:00+00:00</published><updated>2025-12-07T00:00:00+00:00</updated><id>https://gsswain.com/2025/12/07/java-serialization-performance-showdown</id><content type="html" xml:base="https://gsswain.com/2025/12/07/java-serialization-performance-showdown.html"><![CDATA[<h3 id="java-serialization-performance-showdown">Java Serialization Performance Showdown</h3>
+
+<p>In the world of modern software engineering, data is constantly in motion. It’s sent over networks between microservices, stored in caches, and persisted in databases. The process of converting in-memory objects into a format suitable for transmission or storage is called <strong>serialization</strong>, and its counterpart, <strong>deserialization</strong>, is the process of converting it back.</p>
+
+<p>Choosing the right serialization format is a critical architectural decision. It can have a profound impact on your application’s performance, network bandwidth consumption, and even ease of debugging. While JSON has become the de facto standard for its human-readability and ubiquity, is it always the right choice?</p>
+
+<p>To answer this, we ran a comprehensive benchmark comparing some of the most popular serialization frameworks in the Java ecosystem.</p>
+
+<h3 id="the-contenders">The Contenders</h3>
+
+<p>We pitted four major players against each other, using the Java Microbenchmark Harness (JMH) to ensure accurate and reliable results.</p>
+
+<ol>
+  <li><strong>JSON (Jackson):</strong> The undisputed champion of web APIs and configuration files. It’s text-based, human-readable, and supported by virtually every language and platform.</li>
+  <li><strong>Protocol Buffers (Protobuf):</strong> Google’s binary serialization format. It’s schema-first, meaning you define your data structures in a <code class="language-plaintext highlighter-rouge">.proto</code> file, and it’s designed for high performance and compact payloads.</li>
+  <li><strong>Apache Avro (Binary):</strong> A powerful binary serialization format from the Apache ecosystem, widely used in big data platforms like Kafka and Hadoop. It also uses a schema-first approach but with more dynamic capabilities.</li>
+  <li><strong>Apache Avro (JSON):</strong> Avro also supports a JSON encoding. This provides a human-readable format while still leveraging Avro’s schema management capabilities.</li>
+</ol>
+
+<h3 id="the-test-subject-a-real-world-socialmediapost">The Test Subject: A Real-World <code class="language-plaintext highlighter-rouge">SocialMediaPost</code></h3>
+
+<p>To ensure our benchmarks reflect real-world scenarios, we used a moderately complex <code class="language-plaintext highlighter-rouge">SocialMediaPost</code> object. This object was designed to include a mix of data types and structures that are common in modern applications, such as:</p>
+
+<ul>
+  <li><strong>Primitive types:</strong> Strings, longs</li>
+  <li><strong>A list of strings:</strong> <code class="language-plaintext highlighter-rouge">likes</code></li>
+  <li><strong>A list of nested objects:</strong> <code class="language-plaintext highlighter-rouge">comments</code> and <code class="language-plaintext highlighter-rouge">mediaAttachments</code></li>
+</ul>
+
+<p>Here is a sample of the <code class="language-plaintext highlighter-rouge">SocialMediaPost</code> object in JSON format:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"postId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"authorId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="mi">1678886400000</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"mediaAttachments"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"IMAGE"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"http://example.com/some-random-image.jpg"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"VIDEO"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"http://example.com/some-random-video.mp4"</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">],</span><span class="w">
+  </span><span class="nl">"likes"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+    </span><span class="s2">"some-random-string"</span><span class="w">
+  </span><span class="p">],</span><span class="w">
+  </span><span class="nl">"comments"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"commentId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"commenterId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"commentText"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="mi">1678886400000</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="p">{</span><span class="w">
+      </span><span class="nl">"commentId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"commenterId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"commentText"</span><span class="p">:</span><span class="w"> </span><span class="s2">"some-random-string"</span><span class="p">,</span><span class="w">
+      </span><span class="nl">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="mi">1678886400000</span><span class="w">
+    </span><span class="p">}</span><span class="w">
+  </span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>By using an object with this level of complexity, we can be more confident that our benchmark results are representative of the performance you might see in your own applications. The benchmarks were run across multiple JDK versions (17, 21, and 25) to see how performance varies.</p>
+
+<h3 id="the-results-a-deep-dive">The Results: A Deep Dive</h3>
+
+<p>You can explore the full, interactive results yourself on <a href="https://jmh.morethan.io/?gist=c724d78f175ebf8daa62761a138ff9ff">jmh.morethan.io</a>. The raw data for the JMH report is also available in the <a href="https://gist.github.com/GSSwain/c724d78f175ebf8daa62761a138ff9ff">Gist</a>. But here’s the breakdown of what we found.</p>
+
+<h4 id="serialization-the-need-for-speed">Serialization: The Need for Speed</h4>
+
+<p>When it comes to writing data, speed is paramount. Here, the binary formats demonstrated a staggering advantage.</p>
+
+<ul>
+  <li><strong>Winner:</strong> <strong>Protobuf</strong> and <strong>Avro Binary</strong> were neck-and-neck for the top spot, consistently clocking in as the fastest formats. On average, they took around <strong>400-600 nanoseconds</strong> per operation.</li>
+  <li><strong>Middle Ground:</strong> <strong>Jackson JSON</strong> was significantly slower, taking roughly <strong>1100-1200 ns/op</strong>—more than twice as long as the binary leaders.</li>
+  <li><strong>Slowest:</strong> <strong>Avro JSON</strong> was the clear laggard in the serialization race, requiring over <strong>4000 ns/op</strong>.</li>
+</ul>
+
+<p><strong>Key Takeaway:</strong> The overhead of converting data to a text-based format like JSON is substantial. Binary formats are dramatically more efficient.</p>
+
+<h4 id="deserialization-reading-the-data">Deserialization: Reading the Data</h4>
+
+<p>The story here is very similar.</p>
+
+<ul>
+  <li><strong>Winner:</strong> <strong>Protobuf</strong> was the undisputed champion, consistently deserializing the object in around <strong>700 ns/op</strong>.</li>
+  <li><strong>Runner-Up:</strong> <strong>Avro Binary</strong> was not far behind, but Protobuf maintained a consistent edge.</li>
+  <li><strong>The Rest:</strong> <strong>Jackson JSON</strong> and <strong>Avro JSON</strong> were again much slower, taking <strong>~1600 ns/op</strong> and <strong>~5900 ns/op</strong>, respectively.</li>
+</ul>
+
+<p><strong>Key Takeaway:</strong> For performance-critical applications, Protobuf offers a clear and measurable advantage. The cost of parsing text, validating syntax, and mapping fields is significant compared to the direct, structured approach of binary formats.</p>
+
+<h3 id="beyond-speed-payload-size-matters">Beyond Speed: Payload Size Matters</h3>
+
+<p>Performance isn’t just about CPU time; it’s also about resource utilization. A key, unmeasured factor in the JMH report is the size of the serialized payload.</p>
+
+<ul>
+  <li><strong>Binary Formats (Protobuf, Avro Binary):</strong> Produce highly compact payloads. In our tests, the object was serialized to <strong>~750 bytes</strong>.</li>
+  <li><strong>Text Formats (JSON, Avro JSON):</strong> Are much more verbose, resulting in a payload size of <strong>~1220 bytes</strong>—over 60% larger!</li>
+</ul>
+
+<p>This difference is crucial. Smaller payloads mean less network bandwidth consumption, and faster transmission times, especially for large objects or high-throughput systems.</p>
+
+<h3 id="conclusion-which-format-should-you-choose">Conclusion: Which Format Should You Choose?</h3>
+
+<p>Based on the data, here are our recommendations:</p>
+
+<ol>
+  <li><strong>For High-Performance Internal Services (RPC, Microservices):</strong>
+    <ul>
+      <li><strong>Choose Protobuf or Avro Binary.</strong> The performance gains in both serialization and deserialization are too significant to ignore. Protobuf often has a slight edge in raw speed, while Avro’s schema evolution capabilities are top-notch.</li>
+    </ul>
+  </li>
+  <li><strong>For Public APIs and Web Frontends:</strong>
+    <ul>
+      <li><strong>Stick with JSON.</strong> Its human-readability, vast ecosystem, and ease of debugging make it the ideal choice for interfaces that are consumed by external clients or browser applications. The performance trade-off is acceptable for the gain in usability.</li>
+    </ul>
+  </li>
+  <li><strong>For Big Data and Streaming Pipelines (e.g., Kafka):</strong>
+    <ul>
+      <li><strong>Strongly consider Avro.</strong> While Protobuf is fast, Avro was practically designed for this world. Its robust schema evolution support is a massive advantage in environments where data structures change over time.</li>
+    </ul>
+  </li>
+</ol>
+
+<p>The great serialization debate doesn’t have a single winner, but it does have clear use cases. By understanding the trade-offs between performance, payload size, and usability, you can make an informed decision that best fits your needs.</p>
+
+<hr />
+<p><strong>Want to run the benchmarks yourself?</strong> Check out the full project on GitHub at <a href="https://github.com/GSSwain/benchmark-serialization-deserialization">GSSwain/benchmark-serialization-deserialization</a> and dive into the code.</p>]]></content><author><name>Girija Swain</name></author><summary type="html"><![CDATA[Java Serialization Performance Showdown]]></summary></entry><entry><title type="html">Trace ID Generation: A Performance Analysis of UUID vs. OpenTelemetry</title><link href="https://gsswain.com/2025/11/15/performance-analysis-trace-id-generation.html" rel="alternate" type="text/html" title="Trace ID Generation: A Performance Analysis of UUID vs. OpenTelemetry" /><published>2025-11-15T00:00:00+00:00</published><updated>2025-11-15T00:00:00+00:00</updated><id>https://gsswain.com/2025/11/15/performance-analysis-trace-id-generation</id><content type="html" xml:base="https://gsswain.com/2025/11/15/performance-analysis-trace-id-generation.html"><![CDATA[<p>
+In high-volume systems, user experience depends on fast API responses. A slow component in your application can degrade user experience and increase infrastructure costs. This analysis, based on benchmarks from <a href="/2025/10/26/understanding-jmh-java-microbenchmark-harness-made-simple.html">my previous post</a>, shows how the choice of a trace ID generator impacts application latency, user experience, and operational costs.
+</p>
+
+<h2>The Contenders: `UUID` vs. OpenTelemetry's `IdGenerator`</h2>
+
+<p>
+Our benchmarks compared two popular methods for generating trace IDs:
+</p>
+<figure class="highlight"><pre><code class="language-text" data-lang="text">java.util.UUID.randomUUID().toString()
+io.opentelemetry.sdk.trace.RandomIdGenerator.generateTraceId()</code></pre></figure>
+
+<h3>Implementation Differences</h3>
+
+<p>
+The performance gap stems from fundamental design choices. Here’s a side-by-side comparison:
+</p>
+
+<table class="comparison-table">
+    <thead>
+        <tr>
+            <th>Feature</th>
+            <th>UUID (Version 4)</th>
+            <th>OpenTelemetry Trace ID</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>Randomness Source</strong></td>
+            <td><code>SecureRandom</code></td>
+            <td class="highlight-otel"><code>ThreadLocalRandom</code></td>
+        </tr>
+        <tr>
+            <td><strong>Security</strong></td>
+            <td>Cryptographically Strong</td>
+            <td class="highlight-otel">Non-Cryptographic</td>
+        </tr>
+        <tr>
+            <td><strong>Random Bits</strong></td>
+            <td>122 bits</td>
+            <td class="highlight-otel">128 bits</td>
+        </tr>
+        <tr>
+            <td><strong>Concurrency Model</strong></td>
+            <td>Synchronized (locking)</td>
+            <td class="highlight-otel">Thread-local (lock-free)</td>
+        </tr>
+        <tr>
+            <td><strong>Standard</strong></td>
+            <td>RFC 4122</td>
+            <td class="highlight-otel">W3C Trace Context</td>
+        </tr>
+    </tbody>
+</table>
+
+<h4>The Key Takeaway: The Synchronization Bottleneck</h4>
+<p>
+The critical difference is the concurrency model. <code>UUID</code> uses a synchronized, shared <code>SecureRandom</code> instance, which creates a major bottleneck. Under concurrent load, threads must wait to access the generator, causing latency to increase significantly.
+</p>
+<p>
+In contrast, OpenTelemetry's <code>IdGenerator</code> uses <code>ThreadLocalRandom</code>, giving each thread its own independent generator. This lock-free approach avoids contention entirely, allowing throughput to scale almost linearly with the number of threads. For distributed tracing—where the goal is performance and collision avoidance, not cryptographic security—this is the superior trade-off.
+</p>
+
+<h2>The Benchmark: Performance Under Pressure</h2>
+
+<h3>Single Thread Performance Across JDK Versions</h3>
+
+<table class="performance-table">
+<thead>
+<tr>
+    <th class="version-col">JDK Version</th>
+    <th class="impl-col">Implementation</th>
+    <th class="metric-col">Average Time (ns)</th>
+    <th class="metric-col">Throughput (M ops/sec)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="jdk-row">
+    <td rowspan="2" class="version-cell">JDK 25</td>
+    <td class="impl-cell highlight-otel">OpenTelemetry</td>
+    <td class="metric-cell">14.321 &plusmn;0.130</td>
+    <td class="metric-cell">69.8 &plusmn;0.6</td>
+</tr>
+<tr>
+    <td class="impl-cell">UUID</td>
+    <td class="metric-cell">247.141 &plusmn;8.476</td>
+    <td class="metric-cell">4.0 &plusmn;0.1</td>
+</tr>
+<tr class="jdk-row">
+    <td rowspan="2" class="version-cell">JDK 21</td>
+    <td class="impl-cell highlight-otel">OpenTelemetry</td>
+    <td class="metric-cell">14.528 &plusmn;0.474</td>
+    <td class="metric-cell">68.8 &plusmn;2.2</td>
+</tr>
+<tr>
+    <td class="impl-cell">UUID</td>
+    <td class="metric-cell">245.351 &plusmn;14.737</td>
+    <td class="metric-cell">4.1 &plusmn;0.2</td>
+</tr>
+<tr class="jdk-row">
+    <td rowspan="2" class="version-cell">JDK 17</td>
+    <td class="impl-cell highlight-otel">OpenTelemetry</td>
+    <td class="metric-cell">14.414 &plusmn;0.241</td>
+    <td class="metric-cell">69.4 &plusmn;1.2</td>
+</tr>
+<tr>
+    <td class="impl-cell">UUID</td>
+    <td class="metric-cell">862.166 &plusmn;13.122</td>
+    <td class="metric-cell">1.2 &plusmn;0.0</td>
+</tr>
+</tbody>
+</table>
+
+<style>
+.performance-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 15px;
+    border: 1px solid #ddd;
+}
+
+.performance-table th,
+.performance-table td {
+    padding: 12px;
+    text-align: right;
+    border: 1px solid #ddd;
+}
+
+.performance-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+    text-align: center;
+}
+
+.performance-table .version-col {
+    width: 15%;
+}
+
+.performance-table .impl-col {
+    width: 25%;
+}
+
+.performance-table .metric-col {
+    width: 30%;
+}
+
+.performance-table .version-cell {
+    background-color: #f9f9f9;
+    font-weight: bold;
+    text-align: center;
+}
+
+.performance-table .impl-cell {
+    text-align: left;
+}
+
+.performance-table .metric-cell {
+    font-family: monospace;
+}
+
+.performance-table .highlight-otel {
+    background-color: #e8f5e9;
+}
+
+.performance-table tr:hover {
+    background-color: #f8f9fa;
+}
+
+.jdk-row {
+    border-top: 2px solid #ddd;
+}
+
+/* Comparison table styles */
+.comparison-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 15px;
+    border: 1px solid #ddd;
+}
+.comparison-table th, .comparison-table td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+    vertical-align: top;
+}
+.comparison-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+    text-align: center;
+}
+.comparison-table .highlight-otel { background-color: #e8f5e9; }
+
+/* Add spacing for nested lists for better readability */
+.post-content ul ul {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    padding-left: 2em; /* Adjust indentation for nested lists */
+}
+
+/* Style for highlighting contextual paragraphs */
+.highlight-context {
+    background-color: #f0f4f8; /* A light blue-grey background */
+    border-left: 4px solid #4a90e2; /* A complementary blue border */
+    padding: 1em 1.5em;
+    margin: 2em 0;
+    border-radius: 4px;
+}
+
+</style>
+
+<h3>Multi-Thread Performance (10 Threads) Across JDK Versions</h3>
+
+<p class="highlight-context">
+While single-threaded performance provides a useful baseline, it doesn't reflect the reality of a typical web application. Modern services handle hundreds or thousands of concurrent requests, making multi-threaded performance the true test of an implementation's viability at scale. The following benchmark simulates this concurrent load with 10 threads, revealing the critical impact of synchronization on latency and throughput.
+</p>
+
+<table class="performance-table">
+<thead>
+<tr>
+    <th class="version-col">JDK Version</th>
+    <th class="impl-col">Implementation</th>
+    <th class="metric-col">Average Time (ns)</th>
+    <th class="metric-col">Throughput (M ops/sec)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="jdk-row">
+    <td rowspan="2" class="version-cell">JDK 25</td>
+    <td class="impl-cell highlight-otel">OpenTelemetry</td>
+    <td class="metric-cell">24.967 &plusmn;1.525</td>
+    <td class="metric-cell">400.5 &plusmn;24.4</td>
+</tr>
+<tr>
+    <td class="impl-cell">UUID</td>
+    <td class="metric-cell">3,761.317 &plusmn;65.991</td>
+    <td class="metric-cell">2.7 &plusmn;0.1</td>
+</tr>
+<tr class="jdk-row">
+    <td rowspan="2" class="version-cell">JDK 21</td>
+    <td class="impl-cell highlight-otel">OpenTelemetry</td>
+    <td class="metric-cell">23.517 &plusmn;1.003</td>
+    <td class="metric-cell">425.2 &plusmn;18.1</td>
+</tr>
+<tr>
+    <td class="impl-cell">UUID</td>
+    <td class="metric-cell">4,032.508 &plusmn;176.588</td>
+    <td class="metric-cell">2.5 &plusmn;0.1</td>
+</tr>
+<tr class="jdk-row">
+    <td rowspan="2" class="version-cell">JDK 17</td>
+    <td class="impl-cell highlight-otel">OpenTelemetry</td>
+    <td class="metric-cell">23.236 &plusmn;0.393</td>
+    <td class="metric-cell">430.4 &plusmn;7.3</td>
+</tr>
+<tr>
+    <td class="impl-cell">UUID</td>
+    <td class="metric-cell">12,327.410 &plusmn;886.314</td>
+    <td class="metric-cell">0.8 &plusmn;0.1</td>
+</tr>
+</tbody>
+</table>
+<br>
+
+<h2>Analysis: What the Numbers Tell Us</h2>
+
+<h4>OpenTelemetry's Performance Stability</h4>
+<p>
+OpenTelemetry's performance is consistent. Latency remains low (~14 ns) in single-threaded mode and only increases slightly (~24 ns) under concurrent load. This shows the effectiveness of its lock-free, thread-local design, which scales very well.
+</p>
+
+<h4>UUID's Problem with Concurrency</h4>
+<p>
+While newer JDKs have improved <code>UUID</code> performance (a 3x improvement from JDK 17 to 21 in multi-threaded tests), its performance still degrades under load. The latency increases by <strong>15-20x</strong> when moving from a single thread to ten threads. This is a direct result of the synchronization bottleneck in <code>SecureRandom</code>.
+</p>
+
+<h4>The Performance Gap</h4>
+<p>
+The performance difference becomes much larger under concurrent load.
+</p>
+<ul>
+    <li>On <strong>JDK 25</strong>, OpenTelemetry is <strong>17x</strong> faster in a single thread and <strong>150x</strong> faster with 10 threads.</li>
+    <li>On <strong>JDK 17</strong>, the gap is larger: <strong>60x</strong> faster in a single thread and <strong>530x</strong> faster with 10 threads.</li>
+</ul>
+<p>
+This proves that for any modern, concurrent application, <code>UUID.randomUUID()</code> is a significant performance liability for tracing.
+</p>
+
+<h2>The Impact on Applications and Infrastructure</h2>
+
+<p>
+The benchmark results have clear consequences for applications and infrastructure. Here’s how the performance difference translates into real-world outcomes.
+</p>
+
+<h4>1. Slower Response Times and Poor User Experience</h4>
+<p>In a high-volume system, the <strong>15-20x latency increase</strong> with <code>UUID</code> under concurrent load directly impacts every user request. This causes slower API responses and a poor user experience, especially during peak traffic. A system that is fast with one user can become very slow with many users.</p>
+<p>It's also important to note that these benchmarks were run in a controlled environment without the overhead of competing application threads. In a real-world production workload, where the CPU is busy executing business logic and contending for other resources, the impact of <code>UUID</code>'s locking mechanism would be even more severe. The 15-20x latency explosion we measured is likely a conservative estimate; the actual tax on a busy production server is much higher.</p>
+
+<h4>2. Inflated Infrastructure Costs</h4>
+<p>To compensate for the inefficiency of <code>UUID</code>, teams often need to add more servers. The poor scaling means more hardware is required to handle the same workload, which increases infrastructure costs. By choosing a lock-free generator, you can serve more users with less hardware, directly reducing operational spending.</p>
+
+<h4>3. Unpredictable System Performance</h4>
+<p>The stable performance of OpenTelemetry's generator allows for reliable capacity planning. In contrast, the poor scaling of <code>UUID</code> makes it difficult to predict resource needs and ensure system stability during traffic spikes. This uncertainty can lead to service degradations or outages.</p>
+
+<h2>Implementation Recommendations</h2>
+
+<p>
+Based on our comprehensive analysis across JDK versions and threading scenarios:
+</p>
+
+<h4>For New Projects: The Clear Winner</h4>
+<p>
+For any new Java application requiring distributed tracing, <strong>OpenTelemetry's <code>IdGenerator</code> should be the default choice</strong>. It is faster, scales better, and aligns with the W3C Trace Context standard, making it a future-proof decision.
+</p>
+
+<h4>For Existing Systems: A Strategic Migration</h4>
+<p>Priority for migration based on scenarios:</p>
+
+<table class="migration-table">
+<thead>
+<tr>
+    <th class="scenario-col">Scenario</th>
+    <th class="priority-col">Migration Priority</th>
+    <th class="impact-col">Expected Impact</th>
+</tr>
+</thead>
+<tbody>
+<tr class="priority-critical">
+    <td>JDK 17 + High Concurrency</td>
+    <td class="priority-cell">Critical</td>
+    <td class="impact-cell">530x performance improvement</td>
+</tr>
+<tr class="priority-high">
+    <td>JDK 17 + Single Thread</td>
+    <td class="priority-cell">High</td>
+    <td class="impact-cell">60x performance improvement</td>
+</tr>
+<tr class="priority-medium">
+    <td>JDK 21/25 + High Concurrency</td>
+    <td class="priority-cell">Medium</td>
+    <td class="impact-cell">150-170x performance improvement</td>
+</tr>
+<tr class="priority-low">
+    <td>JDK 21/25 + Single Thread</td>
+    <td class="priority-cell">Low</td>
+    <td class="impact-cell">17x performance improvement</td>
+</tr>
+</tbody>
+</table>
+
+<style>
+.migration-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-size: 15px;
+    border: 1px solid #ddd;
+}
+
+.migration-table th,
+.migration-table td {
+    padding: 12px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.migration-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+}
+
+.migration-table .scenario-col {
+    width: 40%;
+}
+
+.migration-table .priority-col {
+    width: 25%;
+}
+
+.migration-table .impact-col {
+    width: 35%;
+}
+
+.migration-table .priority-cell {
+    text-align: center;
+    font-weight: bold;
+}
+
+.migration-table .impact-cell {
+    text-align: right;
+    font-family: monospace;
+}
+
+.migration-table .priority-critical td {
+    background-color: #ffebee;
+}
+
+.migration-table .priority-high td {
+    background-color: #fff3e0;
+}
+
+.migration-table .priority-medium td {
+    background-color: #f1f8e9;
+}
+
+.migration-table .priority-low td {
+    background-color: #f5f5f5;
+}
+
+.migration-table tr:hover td {
+    filter: brightness(95%);
+}
+</style>
+
+<h2>Conclusion</h2>
+
+<p>
+This analysis proves that a technical choice, like the method for generating trace IDs, has a direct and measurable impact on user experience and infrastructure costs. For any high-throughput service, optimizing this component is a straightforward way to build faster, more reliable applications that cost less to run. At scale, small performance differences become significant, and making informed technical decisions is critical for success.
+</p>
+
+<p>
+The complete benchmark code and detailed results are available in the <a href="https://github.com/GSSwain/benchmark-trace-id-generator">benchmark-trace-id-generator</a> repository.
+</p>]]></content><author><name>Girija Swain</name></author><summary type="html"><![CDATA[In high-volume systems, user experience depends on fast API responses. A slow component in your application can degrade user experience and increase infrastructure costs. This analysis, based on benchmarks from my previous post, shows how the choice of a trace ID generator impacts application latency, user experience, and operational costs.]]></summary></entry><entry><title type="html">Understanding JMH: Java Microbenchmark Harness Made Simple</title><link href="https://gsswain.com/2025/10/26/understanding-jmh-java-microbenchmark-harness-made-simple.html" rel="alternate" type="text/html" title="Understanding JMH: Java Microbenchmark Harness Made Simple" /><published>2025-10-26T00:00:00+00:00</published><updated>2025-10-26T00:00:00+00:00</updated><id>https://gsswain.com/2025/10/26/understanding-jmh-java-microbenchmark-harness-made-simple</id><content type="html" xml:base="https://gsswain.com/2025/10/26/understanding-jmh-java-microbenchmark-harness-made-simple.html"><![CDATA[<p>
+    In the world of software development, performance matters. But how do we accurately measure and compare the
+    performance of different implementations? This is where JMH (Java Microbenchmark Harness) comes into play. In this
+    post, we'll explore JMH through a practical example of benchmarking trace ID generation methods.
+</p>
+
+<h2>What is JMH?</h2>
+
+<p>
+    JMH is a Java harness for building, running, and analyzing nano/micro/milli/macro benchmarks written in Java and
+    other languages targeting the JVM. It was developed by the OpenJDK team and is used extensively in the JDK itself to
+    perform performance testing.
+</p>
+
+<h2>Setting Up JMH with Gradle</h2>
+
+<p>
+    To get started with JMH, you'll need to add the necessary dependencies to the build configuration. Here's how to set
+    it up in a Gradle project:
+</p>
+
+<figure class="highlight"><pre><code class="language-gradle" data-lang="gradle"><span class="n">plugins</span> <span class="o">{</span>
+    <span class="n">id</span> <span class="s1">'java'</span>
+    <span class="n">id</span> <span class="s1">'me.champeau.jmh'</span> <span class="n">version</span> <span class="s1">'0.7.1'</span>
+    <span class="n">id</span> <span class="s1">'io.morethan.jmhreport'</span> <span class="n">version</span> <span class="s1">'0.9.0'</span>
+<span class="o">}</span>
+
+<span class="k">dependencies</span> <span class="o">{</span>
+    <span class="n">implementation</span> <span class="s1">'org.openjdk.jmh:jmh-core:1.37'</span>
+    <span class="n">implementation</span> <span class="s1">'org.openjdk.jmh:jmh-generator-annprocess:1.37'</span>
+<span class="o">}</span>
+
+<span class="n">jmh</span> <span class="o">{</span>
+    <span class="n">resultFormat</span> <span class="o">=</span> <span class="s1">'JSON'</span>
+    <span class="n">resultsFile</span> <span class="o">=</span> <span class="n">layout</span><span class="o">.</span><span class="na">buildDirectory</span><span class="o">.</span><span class="na">file</span><span class="o">(</span><span class="s1">'reports/jmh/results.json'</span><span class="o">).</span><span class="na">get</span><span class="o">().</span><span class="na">asFile</span>
+    <span class="n">jmhVersion</span> <span class="o">=</span> <span class="s1">'1.37'</span>
+    <span class="n">timeUnit</span> <span class="o">=</span> <span class="s1">'ns'</span>
+    <span class="n">threads</span> <span class="o">=</span> <span class="n">project</span><span class="o">.</span><span class="na">hasProperty</span><span class="o">(</span><span class="s1">'jmh.threads'</span><span class="o">)</span> <span class="o">?</span> <span class="n">project</span><span class="o">.</span><span class="na">property</span><span class="o">(</span><span class="s1">'jmh.threads'</span><span class="o">).</span><span class="na">toInteger</span><span class="o">()</span> <span class="o">:</span> <span class="mi">1</span>
+<span class="o">}</span></code></pre></figure>
+
+<h2>Writing JMH Benchmarks</h2>
+
+<p>
+    Let's look at a real-world example where we benchmark two different approaches to generating trace IDs: using <code>UUID</code>
+    and using OpenTelemetry's <code>IdGenerator</code>.
+</p>
+
+<figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="nd">@BenchmarkMode</span><span class="o">({</span><span class="nc">Mode</span><span class="o">.</span><span class="na">AverageTime</span><span class="o">})</span>
+<span class="nd">@OutputTimeUnit</span><span class="o">(</span><span class="nc">TimeUnit</span><span class="o">.</span><span class="na">NANOSECONDS</span><span class="o">)</span>
+<span class="nd">@State</span><span class="o">(</span><span class="nc">Scope</span><span class="o">.</span><span class="na">Thread</span><span class="o">)</span>
+<span class="nd">@Warmup</span><span class="o">(</span><span class="n">iterations</span> <span class="o">=</span> <span class="mi">5</span><span class="o">,</span> <span class="n">time</span> <span class="o">=</span> <span class="mi">1</span><span class="o">)</span>
+<span class="nd">@Measurement</span><span class="o">(</span><span class="n">iterations</span> <span class="o">=</span> <span class="mi">10</span><span class="o">,</span> <span class="n">time</span> <span class="o">=</span> <span class="mi">1</span><span class="o">)</span>
+<span class="nd">@Fork</span><span class="o">(</span><span class="mi">2</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">TraceIdGeneratorBenchmark</span> <span class="o">{</span>
+    
+    <span class="kd">private</span> <span class="nc">IdGenerator</span> <span class="n">otelIdGenerator</span><span class="o">;</span>
+
+    <span class="nd">@Setup</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setup</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">otelIdGenerator</span> <span class="o">=</span> <span class="nc">IdGenerator</span><span class="o">.</span><span class="na">random</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Benchmark</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">uuidBasedTraceId</span><span class="o">(</span><span class="nc">Blackhole</span> <span class="n">blackhole</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">String</span> <span class="n">traceId</span> <span class="o">=</span> <span class="no">UUID</span><span class="o">.</span><span class="na">randomUUID</span><span class="o">().</span><span class="na">toString</span><span class="o">();</span>
+        <span class="n">blackhole</span><span class="o">.</span><span class="na">consume</span><span class="o">(</span><span class="n">traceId</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Benchmark</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">openTelemetryTraceId</span><span class="o">(</span><span class="nc">Blackhole</span> <span class="n">blackhole</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">String</span> <span class="n">traceId</span> <span class="o">=</span> <span class="n">otelIdGenerator</span><span class="o">.</span><span class="na">generateTraceId</span><span class="o">();</span>
+        <span class="n">blackhole</span><span class="o">.</span><span class="na">consume</span><span class="o">(</span><span class="n">traceId</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre></figure>
+
+<h2>Understanding JMH Annotations</h2>
+
+<p>Let's break down the key JMH annotations:</p>
+
+<ul>
+    <li><code>@BenchmarkMode</code>: Specifies what to measure. In our example, we measure average time <code>(Mode.AverageTime)</code>.
+    </li>
+    <li><code>@OutputTimeUnit</code>: Defines the unit for the results. In our example it is in nanoseconds <code>(TimeUnit.NANOSECONDS)</code>.
+    </li>
+    <li><code>@State</code>: Defines the scope of our benchmark state (Thread scope means each thread has its own copy).
+    </li>
+    <li><code>@Warmup</code>: This annotation controls the "warm-up" phase of the benchmark. Before JMH starts
+        collecting actual performance data, it runs the benchmark code several times to allow the Java Virtual Machine
+        (JVM) to reach a "steady state."
+        <ul>
+            <li>
+                <code>iterations = 5</code> means JMH will run 5 warm-up iterations.
+            </li>
+            <li>
+                <code>time = 1</code> indicates that each of these 5 warm-up iterations will run for 1 second. During
+                this second, JMH will execute the benchmark method as many times as possible.
+            </li>
+        </ul>
+        <p>The results from these warm-up runs are discarded, ensuring that the subsequent measurements reflect the
+            performance of fully optimized code. Those warmup cycles take care of the below:</p>
+        <ul>
+            <li><strong>JIT Compilation:</strong> The JVM's Just-In-Time (JIT) compiler needs time to identify "hot"
+                code paths and optimize them into highly efficient machine code. The first few executions of a method
+                are often much slower than subsequent ones.
+            </li>
+            <li><strong>Class Loading:</strong> Classes need to be loaded into memory, which incurs a one-time cost.
+            </li>
+        </ul>
+
+    </li>
+    <li><code>@Measurement</code>: This annotation defines the actual "measurement" phase, which begins immediately
+        after the warm-up phase concludes. This is where JMH collects the data that will be used to generate the
+        benchmark report.
+        <ul>
+            <li><code>iterations = 10</code> specifies that JMH will perform 10 separate measurement iterations. Each of
+                these iterations will produce a single data point (a performance score).
+            </li>
+            <li><code>time = 1</code> indicates that each of these 10 measurement iterations will run for 1 second.
+                During this second, JMH will execute the benchmark method as many times as possible.
+            </li>
+        </ul>
+        <p>
+            The benchmark score (e.g. Average Time) and its associated error margin are calculated from the statistical
+            analysis of these 10 collected data points.
+        </p>
+    </li>
+    <li><code>@Fork</code>: Indicates how many separate JVM forks to use (helps eliminate external factors). With a
+        value of <code>2</code> in the <code>@Fork</code> annotation, the entire benchmark would run on 2 different JVM
+        forks. This means the
+        final benchmark score is calculated from the statistical analysis of 20 collected data points (10 from each
+        fork), providing a more robust and reliable performance metric.
+    </li>
+</ul>
+
+<h2>Running the Benchmark Project</h2>
+
+<p>
+    Let's walk through setting up and running our trace ID generator benchmark project:
+</p>
+
+<h3>Project Setup</h3>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c"># Clone the repository</span>
+git clone https://github.com/GSSwain/benchmark-trace-id-generator.git
+<span class="nb">cd </span>benchmark-trace-id-generator</code></pre></figure>
+
+<h3>Understanding the Project Structure</h3>
+<p>The benchmark project includes:</p>
+<ul>
+    <li>JMH configuration in <code>build.gradle</code></li>
+    <li>Benchmark implementation in <code>src/jmh/java</code></li>
+    <li>Two trace ID generation methods:
+        <ul>
+            <li>UUID-based: Using Java's built-in <code>UUID</code> generator</li>
+            <li>OpenTelemetry: Using OpenTelemetry's <code>RandomIdGenerator</code></li>
+        </ul>
+    </li>
+</ul>
+<h3>Understanding the Benchmark report</h3>
+<p>
+    After running the benchmarks, JMH produces a detailed report. Here's a breakdown of what each
+    column means:
+</p>
+<ul>
+    <li><strong>Benchmark:</strong> The name of the benchmark method being tested.</li>
+    <li><strong>Mode:</strong> The measurement mode. In our case, <code>avgt</code> stands for Average Time.</li>
+    <li><strong>Cnt:</strong> The total number of measurement iterations (Forks × Measurement Iterations). In our setup,
+        this is 2 forks × 10 iterations = 20 runs.
+    </li>
+    <li><strong>Score:</strong> The measured performance value. For average time, a lower score is better.</li>
+    <li><strong>Error:</strong> The statistical error margin for the score. A smaller error indicates more stable and
+        reliable results.
+    </li>
+    <li><strong>Units:</strong> The unit of the score, which is <code>ns/op</code> (nanoseconds per operation) in our
+        configuration.
+    </li>
+</ul>
+<h3>Single-Thread Performance (1 Thread, JDK 25)</h3>
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c"># Run the benchmark with single thread on Java 25</span>
+./gradlew clean jmh <span class="nt">-PjavaVersion</span><span class="o">=</span>25</code></pre></figure>
+<h4>Console output</h4>
+<pre>
+    Benchmark                                       Mode  Cnt    Score   Error  Units
+    TraceIdGeneratorBenchmark.openTelemetryTraceId  avgt   20   14.675 ± 0.123  ns/op
+    TraceIdGeneratorBenchmark.uuidBasedTraceId      avgt   20  237.660 ± 2.242  ns/op
+</pre>
+
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c"># Generate html report with single thread on Java 25</span>
+./gradlew clean jmhReport <span class="nt">-PjavaVersion</span><span class="o">=</span>25</code></pre></figure>
+<h4><code>html</code> output</h4>
+<img src="/assets/images/blogs/TraceId-Benchmark-Threads-1.png">
+
+<h3>Multi-Thread Performance (10 Threads, JDK 25)</h3>
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c"># Run with multiple threads on Java 25 (e.g. 10 threads)</span>
+./gradlew clean jmh <span class="nt">-PjavaVersion</span><span class="o">=</span>25 <span class="nt">-Pjmh</span>.threads<span class="o">=</span>10</code></pre></figure>
+<h4>Console output</h4>
+<pre>
+    Benchmark                                       Mode  Cnt     Score     Error  Units
+    TraceIdGeneratorBenchmark.openTelemetryTraceId  avgt   20    24.478 ±   1.215  ns/op
+    TraceIdGeneratorBenchmark.uuidBasedTraceId      avgt   20  3784.821 ± 133.956  ns/op
+</pre>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c"># Generate html report with multiple threads on Java 25 (e.g. 10 threads)</span>
+./gradlew clean jmhReport <span class="nt">-PjavaVersion</span><span class="o">=</span>25 <span class="nt">-Pjmh</span>.threads<span class="o">=</span>10</code></pre></figure>
+<h4><code>html</code> output</h4>
+<img src="/assets/images/blogs/TraceId-Benchmark-Threads-10.png">
+
+<style>
+    ul {
+        margin-top: 10px;
+        margin-left: 10px;
+        margin-bottom: 10px;
+    }
+
+    ul li {
+        margin-top: 10px;
+        margin-left: 20px;
+    }
+
+    ul li > p {
+        margin-top: 10px;
+        margin-left: 20px;
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+</style>
+
+<h3>Interpreting These Results</h3>
+
+<p>Let's break down what these numbers tell us:</p>
+
+<h4>1. Single-Thread Analysis</h4>
+<ul>
+    <li><strong>Average Time:</strong>
+        <ul>
+            <li><code>OpenTelemetry</code>: ~14.6 nanoseconds per operation</li>
+            <li><code>UUID</code>: ~237.6 nanoseconds per operation</li>
+            <li><code>OpenTelemetry</code> is approximately 16x faster compared to <code>UUID</code>.</li>
+        </ul>
+    </li>
+</ul>
+
+<h4>2. Multi-Thread Analysis (10 Threads)</h4>
+<ul>
+    <li><strong>Average Time:</strong>
+        <ul>
+            <li><code>OpenTelemetry</code>: Only increases to ~25 nanoseconds (1.7x increase)</li>
+            <li><code>UUID</code>: Jumps to ~3,784 nanoseconds (~16x increase)</li>
+            <li><code>OpenTelemetry</code> is approximately 150x faster compared to <code>UUID</code> in a multithreaded
+                environment with 10 threads.
+            </li>
+        </ul>
+    </li>
+</ul>
+
+<h4>3. Key Observations</h4>
+<ul>
+    <li><strong>Thread Scaling:</strong>
+        <ul>
+            <li><code>OpenTelemetry</code>: The average time per operation sees only a minor increase (from ~14.7 ns to
+                ~24.5 ns) when moving from 1 to 10 threads, demonstrating excellent scaling under contention.
+            </li>
+            <li><code>UUID</code>: The average time per operation increases dramatically (from ~238 ns to ~3785 ns),
+                indicating significant performance degradation and poor scaling under contention.
+            </li>
+        </ul>
+    </li>
+    <li><strong>Consistency:</strong>
+        <ul>
+            <li><code>OpenTelemetry</code> has very small error margins (±0.123 to ±1.215), indicating consistent
+                performance.
+            </li>
+            <li><code>UUID</code> shows much larger variations (±2.242 to ±133.956), especially under load.</li>
+        </ul>
+    </li>
+</ul>
+
+<p>
+    For a complete breakdown of the results across different JDK versions and a deeper analysis of the real-world
+    impact, please see the follow-up post: <a href="/2025/11/15/performance-analysis-trace-id-generation.html">Trace ID
+    Generation: A Performance Analysis of UUID vs. OpenTelemetry</a>.
+</p>
+
+<h2>Best Practices</h2>
+
+<p>When writing JMH benchmarks, keep these points in mind:</p>
+
+<ul>
+    <li>Use <code>Blackhole.consume()</code> to prevent dead code elimination</li>
+    <li>Include proper warmup iterations to ensure JVM optimization</li>
+    <li>Run multiple forks to get statistically significant results</li>
+    <li>Consider external factors like garbage collection and JIT compilation</li>
+    <li>Document the benchmark environment (JVM version, available processors, etc.)</li>
+</ul>
+
+<h2>Conclusion</h2>
+
+<p>
+    JMH is a powerful tool for measuring and comparing code performance on the JVM. While it requires careful setup and
+    interpretation, it provides valuable insights into code performance characteristics. Remember that microbenchmarks
+    should be one of many tools in the performance testing arsenal, alongside profiling and real-world performance
+    testing.
+</p>
+
+<p>
+    The example used in this post can be found in the <a href="https://github.com/GSSwain/benchmark-trace-id-generator">benchmark-trace-id-generator</a>
+    repository.
+</p>]]></content><author><name>Girija Swain</name></author><summary type="html"><![CDATA[In the world of software development, performance matters. But how do we accurately measure and compare the performance of different implementations? This is where JMH (Java Microbenchmark Harness) comes into play. In this post, we'll explore JMH through a practical example of benchmarking trace ID generation methods.]]></summary></entry><entry><title type="html">Serverless PDF Generation from HTML (WYSIWYG as PDF)</title><link href="https://gsswain.com/2021/03/14/serverless-pdf-generation-from-html-wysiwyg-as-pdf.html" rel="alternate" type="text/html" title="Serverless PDF Generation from HTML (WYSIWYG as PDF)" /><published>2021-03-14T00:00:00+00:00</published><updated>2021-03-14T00:00:00+00:00</updated><id>https://gsswain.com/2021/03/14/serverless-pdf-generation-from-html-wysiwyg-as-pdf</id><content type="html" xml:base="https://gsswain.com/2021/03/14/serverless-pdf-generation-from-html-wysiwyg-as-pdf.html"><![CDATA[<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*feAZdBBLCdvr46oRhe8fVg.png" /></figure>
+<p>In this post, we’ll learn how to create PDF document from HTML using Puppeteer. We’ll also look at a
+    <em>Serverless</em> solution using AWS Lambda. This solution can run on most public clouds and on premises with
+    minor or no modifications.
+</p>
+<h4>Prerequisite:</h4>
+<p>You must be familiar with NodeJS &amp; ES6 to follow along the code examples.<br>You must be familiar with AWS Lambda
+    &amp; AWS SAM to follow the <em>AWS</em> based <em>Serverless</em> example.</p>
+<h3>How do you generate PDF?</h3>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*Dk6SjE_rT-qzJA0--Y8Xjw.png" /></figure>
+<p>Generally you have a template with placeholders. You need to replace the placeholders with actual data and generate a
+    PDF using some compute. The text of the template may come from one team (product and/or legal team), while the look
+    and feel of the template may come from another team (UX or CX team). From a developer’s perspective, he/she gets a
+    sample PDF (with dummy data as placeholder) on some story on an agile board. Now the developer would reverse
+    engineer this sample PDF and develop the code to generate similar PDFs with different sets of data.</p>
+<p>Throughout my professional career, I have used multiple tools for generating PDFs including <em>OpenText
+        StreamServe</em>, <em>iText</em>, <em>JasperReports</em>, <em>Apache PDFbox, Adobe Coldfusion and jsPDF.
+    </em>Being a developer at heart, I certainly have my own bias towards which tool is best among them. In 2017, at
+    GDDIndia I was introduced to Puppeteer.(I was there and it was all real. I badly miss being physically present on
+    such events ever since Covid-19 has emerged.) Here is the Youtube video of the session.</p><iframe
+    src="https://cdn.embedly.com/widgets/media.html?src=https%3A%2F%2Fwww.youtube.com%2Fembed%2FXEw_n_wsk1o%3Fstart%3D639%26feature%3Doembed%26start%3D639%26end%3D1120&amp;display_name=YouTube&amp;url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DXEw_n_wsk1o&amp;image=https%3A%2F%2Fi.ytimg.com%2Fvi%2FXEw_n_wsk1o%2Fhqdefault.jpg&amp;key=a19fcc184b9711e1b4764040d3dc5c07&amp;type=text%2Fhtml&amp;schema=youtube"
+    width="854" height="480" frameborder="0" scrolling="no"><a
+        href="https://medium.com/media/1ae7521bef933ebe99e57c9bb27ae001/href">https://medium.com/media/1ae7521bef933ebe99e57c9bb27ae001/href</a></iframe>
+<p>With just a few lines of code, one can generate a PDF from a HTML page.<br>Is generating a PDF this simple? Yes,
+    it is!</p>
+<h3>Puppeteer:</h3>
+<blockquote>Puppeteer is a Node library which provides a high-level API to control Chrome or Chromium over the <a
+        href="https://chromedevtools.github.io/devtools-protocol/">DevTools Protocol</a>. By default, it launches in
+    headless mode and can do everything a modern browser can, including rendering HTML with CSS. It is under <a
+        href="https://github.com/puppeteer/puppeteer/blob/main/LICENSE">Apache License 2.0</a> and comes with permission
+    for commercial use.</blockquote>
+<h3>Show me the code</h3>
+<p>Here is the code block, which generates a PDF given an URL and a name for the PDF file.</p>
+<pre>const puppeteer = require(&#39;puppeteer&#39;);</pre>
+<pre>const generatePDF = async (pageUrl, newPdfFileName) =&gt; {<br>   const browser = await puppeteer.launch();<br>   const page = await browser.newPage();<br>   await page.goto(pageUrl, {<br>      waitUntil: &#39;networkidle0&#39;<br>   });<br>   await page.pdf({<br>       path: `/tmp/${newPdfFileName}`,<br>       format: &#39;a4&#39;,<br>       printBackground: true<br>   });<br>   await browser.close();<br>}</pre>
+<h3>What does the above code do?</h3>
+<p>It uses Puppeteer to launch a browser. Then it opens a new page and navigates to a given URL and waits till the page
+    is <em>fully loaded</em> (in the above code fully loaded means, Puppeteer would wait until no new network requests
+    are sent for half a second after page load). Then it generates a PDF of the rendered page and finally closes
+    the browser.</p>
+<h4>Sample Usage:</h4>
+<p>The following line of code would create a PDF version of a sample html page using the above function.</p>
+<pre>generatePDF(‘https://gsswain.com/print-sample/&#39;, &#39;Print-sample.pdf&#39;);</pre>
+<h3>Do I need to host the HTML pages publicly?</h3>
+<p><strong>No.</strong><br>1. You need to ensure the above code (when running on some compute) should be able to access
+    your html page. You can host the pages privately (on your intranet may be or have a private api which responds with
+    html pages to be printed).<br>2. The browser can render local html files with
+    <em>file:///&lt;path-to-your-html-page&gt; e.g.
+        page.goto(‘</em>file:///Users/gsswain/Documents/gsswain.com/print-sample/index.html’<em>)<br>3. </em>You can
+    directly render HTML by calling the<em> page.setContent(&lt;html-to-be-rendered&gt;) </em>method instead of
+    calling<em> page.goto() </em>in the above code snippet<em>.</em>
+</p>
+<h3>How does this solution help?</h3>
+<p>The UX/CX team can provide a HTML/CSS based templates rather than providing a sample PDF and you just need to focus
+    on replacing the placeholders with actual data and the above function would take care of generating your PDF. If the
+    UX/CX team provides a sample PDF, in that case you can either use some tool to convert the PDF into HTML and create
+    a template out of that or you can use the expertise of your web developers to create the HTML and CSS based
+    templates. Preferably convincing your UX/CX team to provide the HTML templates would be more efficient and make the
+    entire process a lot faster.</p>
+<p><strong><em>Side note:</em></strong> I personally like the JS template strings to create templates (instead of using
+    another tool/framework/library) and some generic JS code which would take care of validation, replacing the place
+    holders with real data and finally give me the HTML page to create a PDF. I would write more on this templating
+    solution on a different post and would update the link here.</p>
+<h3>Have you used this on production?</h3>
+<p><em>Short answer-</em> <strong>YES.<br></strong><em>Long answer-</em> I always wanted to use this in production, but
+    you know, it’s difficult to convince people 😜. What’s life without meetings!. <strong>This is tested on
+        production</strong> and has done really well generating documents with 30–40 pages (most of the testing anyways
+    happens on production only 😜). As promised I’ll give a AWS Lambda based Serverless solution.</p>
+<h3>Generating PDF from HTML on AWS Lambda</h3>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*ABfSa_ESG33cI6wPH4sdxg.png" /></figure>
+<p>The above image shows all the AWS resources that we are going to create. I’ll briefly explain the solution below.</p>
+<ul>
+    <li>The Lambda sits behind API Gateway. The API accepts a request payload in JSON format. This payload must contain
+        an url for which a PDF needs to be generated. The Lambda generates the required PDF and puts it in a S3 bucket.
+        Finally the API responds with a 201 HTTP status code and a location header containing the S3 object URL. (For
+        supporting CORS one needs to return the S3 URL in the response body as well.)</li>
+    <li>For this example, the S3 bucket has a bucket policy which only allows <strong>public access to objects tagged
+            with <em>public=yes.</em></strong>(You should <strong>ideally block public access to S3</strong> and either
+        share a S3 Signed URL or a CloudFront Signed URL)</li>
+    <li>We also have a Usage plan to restrict the maximum number of requests one can make and an API key is mandatory to
+        access the API.</li>
+    <li>The Puppeteer dependency is put into a Lambda Layer. Instead of using the <em>puppeteer</em> <em>npm</em>
+        library we need to use <em>chrome-aws-lambda </em>as per the troubeleshooting guideline <a
+            href="https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md">here</a>.</li>
+</ul>
+<h3>Lambda Source Code</h3>
+<p>Let’s see the AWS SAM template first</p>
+<h4>SAM template (template.yaml)</h4>
+<script src="https://gist.github.com/cc133627507af9e4454308a4c8e68bf6.js?file=template.yaml"> </script>
+<p><em>The </em>Lambda Runtime<em> is </em><em>NodeJS 14.x and the code is written in </em><em>ES6. With </em><em>Node
+        14 Module support (specify </em><em>&quot;type&quot;: &quot;module&quot; in </em><em>package.json) I thought we
+        might not have to transpile, but it does not work on </em><em>AWS Lambda yet. The Lambda runtime itself uses a
+    </em><em>require(&lt;path-to-handler&gt; for the</em><em>handler configured in the </em><em>Lambda. So we need to
+        transpile and I’m transpiling using </em><em>Babel</em>. Look at the package.json and the build.sh files below
+    for the transpilation. Also note the Handler in the above template points to the dist directory.</p>
+<p>Now let’s see the Lambda code.</p>
+<h4>Lambda Handler (pdf-generator/src/app.js)</h4>
+<script src="https://gist.github.com/cc133627507af9e4454308a4c8e68bf6.js?file=app.js"> </script>
+<p>The handler simply delegates to the PDF Generation Request handler.</p>
+<h4>Pdf Generation Request Handler (pdf-generator/src/pdf-generation-request-handler.js)</h4>
+<script src="https://gist.github.com/cc133627507af9e4454308a4c8e68bf6.js?file=pdf-generation-request-handler.js"> </script>
+<p>This request handler orchestrates the request. First it converts the Lambda event into a PDF Generation request in
+    the constructor (You can take care of any validations here using ValueObject pattern). In the handleRequest method,
+    it creates the PDF using the PDF Generation Service, stores it on S3using the S3 PDF Storage Service and finally
+    sends the PDF created response.</p>
+<h4>Pdf Generation Request Adapter (pdf-generator/src/pdf-generation-request-adapter.js)</h4>
+<script src="https://gist.github.com/cc133627507af9e4454308a4c8e68bf6.js?file=pdf-generation-request-adapter.js"> </script>
+<p>Just picks up the url from the request body and generates a random file name for the PDF. (The name generation code
+    can be place in another file or can also be taken as an input in the request payload).</p>
+<h4>Pdf Generation Service (pdf-generator/src/pdf-generation-service.js)</h4>
+<script src="https://gist.github.com/cc133627507af9e4454308a4c8e68bf6.js?file=pdf-generation-service.js"> </script>
+<p>This service expects the PDF Generation request. It generates the PDF file in the tmp folder and returns the path to
+    the file from the generate method. Notice the difference in terms of the import of chromium and how we launch
+    Puppeteer. There is also a DEFAULT_PRINT_OPTIONS which can be overridden by accepting the same in the request
+    payload. For this example, the default should do.</p>
+<h4>Pdf Storage Service (pdf-generator/src/s3-pdf-storage-service.js)</h4>
+<script src="https://gist.github.com/cc133627507af9e4454308a4c8e68bf6.js?file=s3-pdf-storage-service.js"> </script>
+<p>This stores the file on S3 and <em>returns the HTTP based object URL</em>.</p>
+<p><strong><em>Note:</em></strong> When running on local with sam local start-api, if we set the MODE to SAM_LOCAL, then
+    it would not try to upload to S3, instead return a dummy URL.</p>
+<h4>PDF Generation Request (pdf-generator/src/pdf-storage-request.js)</h4>
+<script src="https://gist.github.com/cc133627507af9e4454308a4c8e68bf6.js?file=pdf-storage-request.js"> </script>
+<h4>S3 PDF Storage Request Adapter (pdf-generator/src/s3-pdf-storage-request-adapter.js)</h4>
+<script src="https://gist.github.com/cc133627507af9e4454308a4c8e68bf6.js?file=s3-pdf-storage-request-adapter.js"> </script>
+<p>This takes care of creating a PutObjectCommand for storing the PDF. We are tagging the object with public=yes and the
+    ContentDisposition is set to attachment which would start downloading the file on a browser.</p>
+<h4>File Service (pdf-generator/src/file-service.js)</h4>
+<script src="https://gist.github.com/cc133627507af9e4454308a4c8e68bf6.js?file=file-service.js"> </script>
+<p>This file returns a read stream for a file.</p>
+<h4>Pdf Generation Response Adapter (pdf-generator/src/pdf-generation-response-adapter.js)</h4>
+<script src="https://gist.github.com/cc133627507af9e4454308a4c8e68bf6.js?file=pdf-generation-response-adapter.js"> </script>
+<p>This converts the response as expected by AWS API Gateway.</p>
+<h4>Config (pdf-generator/src/config.js)</h4>
+<script src="https://gist.github.com/cc133627507af9e4454308a4c8e68bf6.js?file=config.js"> </script>
+<p>Use this Config file instead of reading the configuration from the environment variables directly everywhere in
+    the code.</p>
+<h4>package.json (pdf-generator/package.json)</h4>
+<script src="https://gist.github.com/cc133627507af9e4454308a4c8e68bf6.js?file=package.json"> </script>
+<p><strong><em>Note: </em></strong>The transpile script uses Babel to transform the modules to CommonJS</p>
+<h4>build.sh</h4>
+<script src="https://gist.github.com/cc133627507af9e4454308a4c8e68bf6.js?file=build.sh"> </script>
+<p>Takes care of transpiling the JS code before running sam build</p>
+<h4>.npmignore</h4>
+<script src="https://gist.github.com/cc133627507af9e4454308a4c8e68bf6.js?file=.npmignore"> </script>
+
+<p>Ignore the tests and src files to be included in the lambda package.</p>
+<h4>Lambda Layer package.json (dependencies/nodejs/node14/package.json)</h4>
+<script src="https://gist.github.com/cc133627507af9e4454308a4c8e68bf6.js?file=layer-package.json"> </script>
+<p>This file contains all the dependencies which should go into the Lambda Layer. Also revisit the
+    PuppeteerDependencyLayer in the above SAM template.</p>
+<h4>main.yml(.github/workflows/main.yml)</h4>
+<script src="https://gist.github.com/cc133627507af9e4454308a4c8e68bf6.js?file=ci.yml"> </script>
+<p>This section is optional and is not a requirement for building and deploying AWS Lambda. You can use your favourite
+    CI/CD tool.<br>The above file is a Github Actions workflow configuration file. <strong>This will trigger the build,
+        validate the SAM template and then deploy to AWS on git push</strong>. <strong><em>Now that’s real power and
+            productivity ❤️</em></strong><em>. </em>You need to set the <strong><em>secrets</em></strong>
+    (<em>AWS_ACCESS_KEY_ID</em>, <em>AWS_SECRET_ACCESS_KEY</em> and <em>AWS_DEFAULT_REGION</em>) in your Github repo for
+    this to work.</p>
+<p><em>I humbly thank the </em><em>Github team and </em><em>Microsoft for Github Actions.</em></p>
+<h4>Parameters for sam local (sam-local-env.json)</h4>
+<script src="https://gist.github.com/cc133627507af9e4454308a4c8e68bf6.js?file=sam-local-env.json"> </script>
+<p>The above file contains the parameter overrides for testing the Lambda on local. One can also use LocalStack for a
+    complete integration test (a topic which would need a separate post).</p>
+<p>Now that’s all the code. The entire repo is available <a
+        href="https://github.com/Girija-Shankar-Swain/html-to-pdf-generator-puppeteer-aws-lambda">here</a> for
+    reference. Feel free to send a pull request, if you have any suggestions.</p>
+<h3>Build on Local:</h3>
+<p>Run the build.sh script to build the project on local.</p>
+<h3>Test on Local:</h3>
+<p>Make sure you have Docker installed and running on your machine.</p>
+<h4>Start the api</h4>
+<p>sam local start-api --env-vars sam-local-env.json</p>
+<p>Now you can test the API deployed on local, with the following request.</p>
+<h4>Sample Request:</h4>
+<pre>curl -i -X POST \<br>  <a href="http://127.0.0.1:3000/generate-pdf/">http://127.0.0.1:3000/generate-pdf/</a> \<br>  -H &#39;cache-control: no-cache&#39; \<br>  -H &#39;content-type: application/json&#39; \<br>  -d &#39;{<br> &quot;url&quot;: &quot;<a href="https://gsswain.com/print-sample/">https://gsswain.com/print-sample/</a>&quot;<br>}&#39;</pre>
+<h4>Sample Response:</h4>
+<pre>HTTP/1.0 201 CREATED<br>Content-Type: application/json<br>Access-Control-Allow-Origin: <a href="http://localhost:8080">http://localhost:8080</a><br>location: <a href="https://dummyS3Url/3c8e8e4c-f7b4-4f5b-8e85-8dc06f8a22c3_1615739992609_353075938260911200.pdf">https://dummyS3Url/3c8e8e4c-f7b4-4f5b-8e85-8dc06f8a22c3_1615739992609_353075938260911200.pdf</a><br>Content-Length: 105<br>Server: Werkzeug/1.0.1 Python/3.8.8<br>Date: Sun, 14 Mar 2021 16:39:57 GMT</pre>
+<pre>{&quot;pdfUrl&quot;:&quot;https://dummyS3Url/3c8e8e4c-f7b4-4f5b-8e85-8dc06f8a22c3_1615739992609_353075938260911200.pdf&quot;}</pre>
+<h3>Deploy on AWS:</h3>
+<p>You can use sam deploy --guided to deploy the Lambda.<br>If you use Github as your repo, then you can build and
+    deploy using Github Actions which was covered above.<br>For the CI/CD deploy to work, you need to have the
+    samconfig.toml file with appropriate values. Refer to the one in my <a
+        href="https://github.com/GSSwain/html-to-pdf-generator-puppeteer-aws-lambda">repo</a>.</p>
+<h3>Test the deployed solution</h3>
+<p>If you have deployed this to your AWS account, you must pass the api key in the headers. You need to go the AWS
+    CloudFormation stack and then to the resources. Go to the ApiKey resource and then click show.</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*bLWB5IFXIPj74mbE0fXAuA.png" /></figure>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*r5AnkOsy6ODVzjAWxciC6Q.png" /></figure>
+<p>You can get the URL of the API in the Output section of the AWS CloudFormation Stack.</p>
+<p>Now you can test the API deployed on AWS with the following request.</p>
+<h4>Sample Request:</h4>
+<pre>curl -i -X POST \<br>  <a href="https://lote3qjqz8.execute-api.ap-southeast-2.amazonaws.com/Prod/generate-pdf/">https://&lt;YOUR-API-ID&gt;.execute-api.ap-southeast-2.amazonaws.com/Prod/generate-pdf/</a> \<br>  -H &#39;cache-control: no-cache&#39; \<br>  -H &#39;content-type: application/json&#39; \<br>  -H &#39;x-api-key: &lt;YOUR-API-KEY_GOES_HERE&gt;&#39; \<br>  -d &#39;{<br> &quot;url&quot;: &quot;<a href="https://gsswain.com/print-sample/">https://gsswain.com/print-sample/</a>&quot;<br>}&#39;</pre>
+<h4>Sample Response:</h4>
+<pre>HTTP/2 201<br>content-type: application/json<br>content-length: 171<br>location: &lt;GENERATED_PDF_URL&gt;<br>date: Sun, 14 Mar 2021 15:26:36 GMT<br>x-amzn-requestid: 8aa9cd12-aaa9-4628-96db-e2d7b952feb5<br>access-control-allow-origin: <a href="https://gsswain.com">https://gsswain.com</a><br>x-amz-apigw-id: cLuuTFlYSwMF5dw=<br>x-amzn-trace-id: Root=1-604e2b28-1cff94e27f34e4e35ec1a6e8;Sampled=0<br></pre>
+<pre>{&quot;pdfUrl&quot;:&quot;&lt;GENERATED_PDF_URL&gt;&quot;}</pre>
+<p>Copy the pdfUrl value returned in the response and open in a browser and you should see the PDF version of the page.
+    Check the tags and metadata in the S3 bucket.</p>
+<p><strong><em>Note:</em></strong> You can’t access all the objects in the bucket unless you know the bucket key for all
+    of them. Also if you upload directly to S3 without the tag public=yes, they can’t be accessed even if you know the
+    bucket key. With that we have covered a lot of ground and finally tested our lambda on AWS as well.</p>
+<h3>Cleanup:</h3>
+<p>After you have done your testing delete all the resources</p>
+<h4>Delete all objects in S3 bucket</h4>
+<p>aws s3 rm s3://&lt;your-s3-bucket-name&gt; --recursive</p>
+<h4>Delete the CloudFormation Stack</h4>
+<p>aws cloudformation delete-stack --stack-name &lt;name-of-your-cfn-stack&gt;</p>
+<h3>Summary:</h3>
+<p>I hope you learnt a little something and you can use this solution somewhere on production 😊. This is half the
+    story. Ideally you would like to have an API which would take a templateId, <strong><em>some data for the template
+        </em></strong>and generate a PDF with that. This code example generates a PDF, given a URL. You can easily build
+    upon this to support templates. If you are having any issues with Puppeteer<em> </em>while<em> </em>deploying this
+    solution to some other platform, please go through the troubleshooting guide <a
+        href="https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md">here</a>.</p>
+<p><strong><em>Note:</em> </strong>There is at least two sides to everything.<strong> </strong>Lambda <strong>is not a
+        silver bullet</strong> and you should have some expert opinion before using them for your use case. This
+    solution would work best when your target is high throughput rather than low latency. I have intentionally kept the
+    ReserverConcurrentExecutions to 1 in the SAM template. Play around the <em>Memory, Concurrency</em> mode for your
+    use case. If you need help do reach out to me.</p>
+<h3>References:</h3>
+<ul>
+    <li><a href="https://developers.google.com/web/tools/puppeteer">Puppeteer</a></li>
+    <li><a href="https://nodejs.org/en/blog/release/v14.0.0/">NodeJS 14</a></li>
+    <li><a href="https://aws.amazon.com/lambda/">AWS Lambda</a></li>
+    <li><a href="https://aws.amazon.com/serverless/sam/">AWS SAM</a></li>
+    <li><a href="https://docs.aws.amazon.com/lambda/latest/dg/configuration-layers.html">AWS Lambda Layer</a></li>
+    <li><a href="https://aws.amazon.com/blogs/compute/working-with-aws-lambda-and-lambda-layers-in-aws-sam/">AWS Lambda
+            Layer with SAM</a></li>
+    <li><a href="https://aws.amazon.com/cli/">AWS CLI</a></li>
+    <li><a href="https://docs.github.com/en/actions">Github Actions</a></li>
+    <li><a href="https://babeljs.io/docs/en/">Babel</a></li>
+    <li><a href="https://localstack.cloud/#intro">LocalStack</a></li>
+</ul><img src="https://medium.com/_/stat?event=post.clientViewed&referrerSource=full_rss&postId=2f295a23cb6d" width="1"
+    height="1" alt="">]]></content><author><name>Girija Swain</name></author><category term="aws-lambda" /><category term="aws-sam" /><category term="puppeteer" /><category term="pdf-generation" /><category term="serverless" /><summary type="html"><![CDATA[In this post, we’ll learn how to create PDF document from HTML using Puppeteer. We’ll also look at a Serverless solution using AWS Lambda. This solution can run on most public clouds and on premises with minor or no modifications. Prerequisite: You must be familiar with NodeJS &amp; ES6 to follow along the code examples.You must be familiar with AWS Lambda &amp; AWS SAM to follow the AWS based Serverless example. How do you generate PDF? Generally you have a template with placeholders. You need to replace the placeholders with actual data and generate a PDF using some compute. The text of the template may come from one team (product and/or legal team), while the look and feel of the template may come from another team (UX or CX team). From a developer’s perspective, he/she gets a sample PDF (with dummy data as placeholder) on some story on an agile board. Now the developer would reverse engineer this sample PDF and develop the code to generate similar PDFs with different sets of data. Throughout my professional career, I have used multiple tools for generating PDFs including OpenText StreamServe, iText, JasperReports, Apache PDFbox, Adobe Coldfusion and jsPDF. Being a developer at heart, I certainly have my own bias towards which tool is best among them. In 2017, at GDDIndia I was introduced to Puppeteer.(I was there and it was all real. I badly miss being physically present on such events ever since Covid-19 has emerged.) Here is the Youtube video of the session.https://medium.com/media/1ae7521bef933ebe99e57c9bb27ae001/href With just a few lines of code, one can generate a PDF from a HTML page.Is generating a PDF this simple? Yes, it is! Puppeteer: Puppeteer is a Node library which provides a high-level API to control Chrome or Chromium over the DevTools Protocol. By default, it launches in headless mode and can do everything a modern browser can, including rendering HTML with CSS. It is under Apache License 2.0 and comes with permission for commercial use. Show me the code Here is the code block, which generates a PDF given an URL and a name for the PDF file. const puppeteer = require(&#39;puppeteer&#39;); const generatePDF = async (pageUrl, newPdfFileName) =&gt; { const browser = await puppeteer.launch(); const page = await browser.newPage(); await page.goto(pageUrl, { waitUntil: &#39;networkidle0&#39; }); await page.pdf({ path: `/tmp/${newPdfFileName}`, format: &#39;a4&#39;, printBackground: true }); await browser.close();} What does the above code do? It uses Puppeteer to launch a browser. Then it opens a new page and navigates to a given URL and waits till the page is fully loaded (in the above code fully loaded means, Puppeteer would wait until no new network requests are sent for half a second after page load). Then it generates a PDF of the rendered page and finally closes the browser. Sample Usage: The following line of code would create a PDF version of a sample html page using the above function. generatePDF(‘https://gsswain.com/print-sample/&#39;, &#39;Print-sample.pdf&#39;); Do I need to host the HTML pages publicly? No.1. You need to ensure the above code (when running on some compute) should be able to access your html page. You can host the pages privately (on your intranet may be or have a private api which responds with html pages to be printed).2. The browser can render local html files with file:///&lt;path-to-your-html-page&gt; e.g. page.goto(‘file:///Users/gsswain/Documents/gsswain.com/print-sample/index.html’)3. You can directly render HTML by calling the page.setContent(&lt;html-to-be-rendered&gt;) method instead of calling page.goto() in the above code snippet. How does this solution help? The UX/CX team can provide a HTML/CSS based templates rather than providing a sample PDF and you just need to focus on replacing the placeholders with actual data and the above function would take care of generating your PDF. If the UX/CX team provides a sample PDF, in that case you can either use some tool to convert the PDF into HTML and create a template out of that or you can use the expertise of your web developers to create the HTML and CSS based templates. Preferably convincing your UX/CX team to provide the HTML templates would be more efficient and make the entire process a lot faster. Side note: I personally like the JS template strings to create templates (instead of using another tool/framework/library) and some generic JS code which would take care of validation, replacing the place holders with real data and finally give me the HTML page to create a PDF. I would write more on this templating solution on a different post and would update the link here. Have you used this on production? Short answer- YES.Long answer- I always wanted to use this in production, but you know, it’s difficult to convince people 😜. What’s life without meetings!. This is tested on production and has done really well generating documents with 30–40 pages (most of the testing anyways happens on production only 😜). As promised I’ll give a AWS Lambda based Serverless solution. Generating PDF from HTML on AWS Lambda The above image shows all the AWS resources that we are going to create. I’ll briefly explain the solution below. The Lambda sits behind API Gateway. The API accepts a request payload in JSON format. This payload must contain an url for which a PDF needs to be generated. The Lambda generates the required PDF and puts it in a S3 bucket. Finally the API responds with a 201 HTTP status code and a location header containing the S3 object URL. (For supporting CORS one needs to return the S3 URL in the response body as well.) For this example, the S3 bucket has a bucket policy which only allows public access to objects tagged with public=yes.(You should ideally block public access to S3 and either share a S3 Signed URL or a CloudFront Signed URL) We also have a Usage plan to restrict the maximum number of requests one can make and an API key is mandatory to access the API. The Puppeteer dependency is put into a Lambda Layer. Instead of using the puppeteer npm library we need to use chrome-aws-lambda as per the troubeleshooting guideline here. Lambda Source Code Let’s see the AWS SAM template first SAM template (template.yaml) The Lambda Runtime is NodeJS 14.x and the code is written in ES6. With Node 14 Module support (specify &quot;type&quot;: &quot;module&quot; in package.json) I thought we might not have to transpile, but it does not work on AWS Lambda yet. The Lambda runtime itself uses a require(&lt;path-to-handler&gt; for thehandler configured in the Lambda. So we need to transpile and I’m transpiling using Babel. Look at the package.json and the build.sh files below for the transpilation. Also note the Handler in the above template points to the dist directory. Now let’s see the Lambda code. Lambda Handler (pdf-generator/src/app.js) The handler simply delegates to the PDF Generation Request handler. Pdf Generation Request Handler (pdf-generator/src/pdf-generation-request-handler.js) This request handler orchestrates the request. First it converts the Lambda event into a PDF Generation request in the constructor (You can take care of any validations here using ValueObject pattern). In the handleRequest method, it creates the PDF using the PDF Generation Service, stores it on S3using the S3 PDF Storage Service and finally sends the PDF created response. Pdf Generation Request Adapter (pdf-generator/src/pdf-generation-request-adapter.js) Just picks up the url from the request body and generates a random file name for the PDF. (The name generation code can be place in another file or can also be taken as an input in the request payload). Pdf Generation Service (pdf-generator/src/pdf-generation-service.js) This service expects the PDF Generation request. It generates the PDF file in the tmp folder and returns the path to the file from the generate method. Notice the difference in terms of the import of chromium and how we launch Puppeteer. There is also a DEFAULT_PRINT_OPTIONS which can be overridden by accepting the same in the request payload. For this example, the default should do. Pdf Storage Service (pdf-generator/src/s3-pdf-storage-service.js) This stores the file on S3 and returns the HTTP based object URL. Note: When running on local with sam local start-api, if we set the MODE to SAM_LOCAL, then it would not try to upload to S3, instead return a dummy URL. PDF Generation Request (pdf-generator/src/pdf-storage-request.js) S3 PDF Storage Request Adapter (pdf-generator/src/s3-pdf-storage-request-adapter.js) This takes care of creating a PutObjectCommand for storing the PDF. We are tagging the object with public=yes and the ContentDisposition is set to attachment which would start downloading the file on a browser. File Service (pdf-generator/src/file-service.js) This file returns a read stream for a file. Pdf Generation Response Adapter (pdf-generator/src/pdf-generation-response-adapter.js) This converts the response as expected by AWS API Gateway. Config (pdf-generator/src/config.js) Use this Config file instead of reading the configuration from the environment variables directly everywhere in the code. package.json (pdf-generator/package.json) Note: The transpile script uses Babel to transform the modules to CommonJS build.sh Takes care of transpiling the JS code before running sam build .npmignore]]></summary></entry><entry><title type="html">Quarkus and the Java Developer Experience</title><link href="https://gsswain.com/2020/09/20/quarkus-and-the-java-developer-experience.html" rel="alternate" type="text/html" title="Quarkus and the Java Developer Experience" /><published>2020-09-20T00:00:00+00:00</published><updated>2020-09-20T00:00:00+00:00</updated><id>https://gsswain.com/2020/09/20/quarkus-and-the-java-developer-experience</id><content type="html" xml:base="https://gsswain.com/2020/09/20/quarkus-and-the-java-developer-experience.html"><![CDATA[<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*4Oxs97dZeDJuT4UnvIAc9g.jpeg" /></figure><p>This post covers </p><ul><li>What is Quarkus? </li><li>Getting started with Quarkus. </li><li>What is native executable? </li><li>Building <em>native executable from Java using Quarkus</em>. </li><li>Startup time difference for Jar and native executables. </li><li><em>Hot code replacement</em> for Java (For me this is one of the biggest USP of the framework). </li></ul><h3>What is Quarkus?</h3><blockquote>Quarkus is a full-stack, Kubernetes-native <a href="https://www.redhat.com/en/topics/cloud-native-apps/what-is-a-Java-framework">Java framework</a> made for Java virtual machines (JVMs) and native compilation, optimizing Java specifically for containers and enabling it to become an effective platform for <a href="https://www.redhat.com/en/topics/cloud-native-apps/what-is-serverless">serverless</a>, <a href="https://www.redhat.com/en/topics/cloud">cloud</a>, and <a href="https://www.redhat.com/en/topics/containers/what-is-kubernetes">Kubernetes</a> environments.</blockquote><h3>Getting started with Quarkus</h3><p>You would need to have Java 8 or Java 11 installed along with Maven to get started with Quarkus.</p><h4>Create a Boilerplate REST project</h4><p>Let’s use the Maven plugin to create a boilerplate</p><pre>mvn io.quarkus:quarkus-maven-plugin:1.8.1.Final:create</pre><p>Now it would ask for the <em>groupId, artifcatId, version </em>to be entered. It would also ask if we want a REST resource (say yes) followed by the <em>classname</em> and the <em>path</em> of the rest resource. This is how it would look like</p><figure><img alt="" src="https://cdn-images-1.medium.com/max/1016/1*Ynag2d-Mio8ptTapuA2MHQ.png" /></figure><p>Now we have a Quarkus boilerplate project ready to be build and run.</p><h4>Build the project</h4><p>To create a Jar run the following command.</p><p>mvn package</p><figure><img alt="" src="https://cdn-images-1.medium.com/max/1004/1*E0Wnq1tElKnKdakJCK6aaQ.jpeg" /></figure><p>The build took around <strong>16 seconds</strong>.</p><p>We cover building <em>native executable</em> in the next section.</p><h4>Run the project</h4><p>java -jar target/quarkus-hello-world-1.0-SNAPSHOT-runner.jar</p><h4>Test the project</h4><p>Either use curl or open it on a browser and check</p><p>curl <a href="http://localhost:8080/hello">http://localhost:8080/hello</a></p><figure><img alt="" src="https://cdn-images-1.medium.com/max/904/1*vB8gHFcpTJ3Uahle9dzxgQ.png" /></figure><h3>What is native executable?</h3><p>In the world of Java, we compile the source code to Java byte code (Job of <em>javac</em>). When we run this compiled code, the Java byte code is converted to machine specific code (<em>JRE</em> does this). What if we could compile the Java source code to machine specific code and run the machine code directly without a JRE. This is exactly what a native executable is and <strong><em>GraalVM</em></strong> <em>native-image</em> can do this for us.</p><blockquote>With native executables, we don’t need the JRE to run java code anymore . Those native executables are <strong>faster to bootstrap</strong> and <strong>need less resources to run</strong>. The only thing we need to give up is the <strong>Write</strong> <strong>Once Run Anywhere (WORA)</strong>. That means the code would only run on similar systems on which it was compiled. But wait! Can’t we build for a specific machine and run the code along with that machine? Yes, we could do this with a <strong>container-image</strong>. So we still get WORA as long as the <strong>container run time can run on any machine</strong>.</blockquote><h3>Building native executable from Java using Quarkus</h3><p>With Quarkus we can build the following native executables</p><ol><li>Native executable for our development machine (Won’t run on different OS or even with same OS)</li><li>Container image with native executable (Runs everywhere where the container runtime is supported)</li></ol><h3>1. Build native executable for our development machine</h3><p>Following are the steps to create a native executable for your development machine.</p><ul><li><a href="https://www.graalvm.org/docs/getting-started-with-graalvm/#install-graalvm">Install GraalVM</a></li><li>Set <em>GRAALVM_HOME </em>environment variable</li><li>Add <em>GRAALVM_HOME/bin </em>directory to<em> PATH</em></li><li>Install GraalVM <em>native-image</em> utility (Run gu install native-image)</li><li>Set up <em>C </em>Langauge environment (Varies for different OS and covered below)</li><li>Finally run maven package with the native profile enabled (On Windows an extra step is required and covered below)</li></ul><h4>Setting up C</h4><p>On a Mac run the following command</p><pre>xcode-select --install</pre><p>On a Linux based system run the following command</p><pre># dnf (rpm-based)<br>sudo dnf install gcc glibc-devel zlib-devel libstdc++-static<br># Debian-based distributions:<br>sudo apt-get install build-essential libz-dev zlib1g-dev</pre><p>On Windows 10, get the <em>Visual Studio 2019 C++ build tools</em> and install the checked optional packages (I have used the community edition)</p><figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*4_v2StXKD9p7G7k6wZhBsQ.jpeg" /></figure><h4>Build native executable</h4><p>For building the native image, we need to run the following command</p><p>mvn package -Pnative</p><p>For Windows 10, you <strong>must be using the command prompt</strong> (does not work on PowerShell yet). You need to run the following batch file before running the native maven build (The path to this file would vary depending upon the version of Visual Studio e.g. 2019, 2017 and if it Community or not)</p><pre>&quot;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat&quot;</pre><p>I have created a cmd file (native-build-windows.cmd) which runs both the commands for me.</p><pre>call &quot;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat&quot;</pre><pre>mvn package -Pnative</pre><p>Once you run this, you would get a native executable</p><p>On Mac, it creates an executable file named quarkus-hello-world-1.0-SNAPSHOT-runner under the target directory.</p><p>On Windows-10 an <em>exe </em>named<em> </em>quarkus-hello-world-1.0-SNAPSHOT-runner.exe is created under the target diectory.</p><p>Run this file and do a round of testing. Note this executable will not run on different OS and may not run on different machines with same OS as well. So we need to create a container image which would run irrespective of the OS.</p><h3>2. Building container image with native executable</h3><p>Let’s start Docker and get going. (Allow file sharing on Docker)</p><p>Run the following command</p><p>mvn package -Pnative -Dquarkus.native.container-build=true</p><p>It would again build an executable but this time if you run it on your own machine, it would fail as the container build happens on the ubi-quarkus-native-image:20.2.0-java11 container.</p><p>To run the executable, we can create a container image and run that with the following command</p><pre># Build the image<br>docker build -f src/main/docker/Dockerfile.native -t quarkus/quarkus-hello-world .</pre><pre># Run the image<br>docker run -i --rm -p 8080:8080 quarkus/quarkus-hello-world</pre><p>This brings ubi8/ubi-minimal:8.1 image as the runtime for the executable.</p><p>There is an easier way to create the container image. Just add the following Quarkus extension using the below command</p><p>mvn quarkus:add-extension -Dextensions=quarkus-container-image-jib</p><p>Run the following command to build the Docker image</p><pre>mvn package -Pnative -Dquarkus.native.container-build=true -Dquarkus.container-image.build=true</pre><figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*LFAA1qIqyN2osZoGSSCz3g.jpeg" /></figure><p>The build took around <strong>8 minutes</strong>.</p><p>By default the container image group is your user-name of the PC. You can change it with setting a different value for quarkus.container-image.group in the application.properties file</p><p>Now run the docker image (Replace the container-image-group value)</p><p>docker run -I --rm -p 8080:8080 &lt;container-image-group&gt;/quarkus-hello-world:1.0-SNAPSHOT</p><h3>Startup time difference for Jar and native executables</h3><p>Here is a quick summary of the startup time for the various kinds of builds and runtime on a Windows 10 with 20GB of RAM with intel i5 processor.</p><p>The <strong>jar</strong> version took around<strong> 1.773 seconds</strong>, the <strong>native machine executable</strong> started in <strong>0.281 seconds</strong> and the <strong>native container image</strong> started in <strong>0.017 seconds</strong> 😊.</p><figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*GEywE23svFHY4miD8gxgXw.jpeg" /></figure><h3>Hot code replacement for Java</h3><p>Hot code replacement is the idea, where we replace code which is already running. This was always there, <a href="https://docs.spring.io/spring-boot/docs/current/reference/html/using-spring-boot.html#using-boot-devtools">SpringBoot Dev-tools</a> does this when the <em>classpath</em> gets updated. The hot code replacement with Quarkus is cool and very similar in experience to the NodeJS based eco-system (with a watch option on source files). It detects the changes on the source files, compiles them and replaces them.</p><p>Let’s see this in action</p><p>Start the project in dev mode</p><pre>mvnw quarkus:dev</pre><figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*PwpeEFL-tvSlsne5sx2Wbg.jpeg" /></figure><p>Now let’s return “<em>hi” </em>instead of <em>“hello” </em>(any change would do) and save the file. You would notice the source file change would be detected and it would hot replace the code.</p><figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*ZlLQK8WzoOJurGzC55xa7g.jpeg" /></figure><p>This certainly saves a few seconds to minutes (depending on your machine 😜). ❤️ this feature.</p><h3>Conclusion:</h3><p>Quarkus looks really good. I like the way it has given the much needed boost to the Java Developer experience and make us feel more productive. The supported eco-system is also promising (See it for yourself with mvn quarkus:list-extensions). I hope you would give it a try and discover for yourself.</p><h3>References:</h3><ul><li><a href="https://quarkus.io">Quarkus</a></li><li><a href="https://www.graalvm.org/why-graalvm/">GraalVM</a></li><li><a href="https://www.docker.com">Docker</a></li></ul><img src="https://medium.com/_/stat?event=post.clientViewed&referrerSource=full_rss&postId=b9817fe4e3d7" width="1" height="1" alt=""><hr><p><a href="https://medium.com/swlh/quarkus-and-the-java-developer-experience-b9817fe4e3d7">Quarkus and the Java Developer Experience</a> was originally published in <a href="https://medium.com/swlh">The Startup</a> on Medium, where people are continuing the conversation by highlighting and responding to this story.</p>]]></content><author><name>Girija Swain</name></author><category term="containers" /><category term="java" /><category term="graalvm" /><category term="developer-experience" /><category term="quarkus" /><summary type="html"><![CDATA[This post covers What is Quarkus? Getting started with Quarkus. What is native executable? Building native executable from Java using Quarkus. Startup time difference for Jar and native executables. Hot code replacement for Java (For me this is one of the biggest USP of the framework). What is Quarkus?Quarkus is a full-stack, Kubernetes-native Java framework made for Java virtual machines (JVMs) and native compilation, optimizing Java specifically for containers and enabling it to become an effective platform for serverless, cloud, and Kubernetes environments.Getting started with QuarkusYou would need to have Java 8 or Java 11 installed along with Maven to get started with Quarkus.Create a Boilerplate REST projectLet’s use the Maven plugin to create a boilerplatemvn io.quarkus:quarkus-maven-plugin:1.8.1.Final:createNow it would ask for the groupId, artifcatId, version to be entered. It would also ask if we want a REST resource (say yes) followed by the classname and the path of the rest resource. This is how it would look likeNow we have a Quarkus boilerplate project ready to be build and run.Build the projectTo create a Jar run the following command.mvn packageThe build took around 16 seconds.We cover building native executable in the next section.Run the projectjava -jar target/quarkus-hello-world-1.0-SNAPSHOT-runner.jarTest the projectEither use curl or open it on a browser and checkcurl http://localhost:8080/helloWhat is native executable?In the world of Java, we compile the source code to Java byte code (Job of javac). When we run this compiled code, the Java byte code is converted to machine specific code (JRE does this). What if we could compile the Java source code to machine specific code and run the machine code directly without a JRE. This is exactly what a native executable is and GraalVM native-image can do this for us.With native executables, we don’t need the JRE to run java code anymore . Those native executables are faster to bootstrap and need less resources to run. The only thing we need to give up is the Write Once Run Anywhere (WORA). That means the code would only run on similar systems on which it was compiled. But wait! Can’t we build for a specific machine and run the code along with that machine? Yes, we could do this with a container-image. So we still get WORA as long as the container run time can run on any machine.Building native executable from Java using QuarkusWith Quarkus we can build the following native executablesNative executable for our development machine (Won’t run on different OS or even with same OS)Container image with native executable (Runs everywhere where the container runtime is supported)1. Build native executable for our development machineFollowing are the steps to create a native executable for your development machine.Install GraalVMSet GRAALVM_HOME environment variableAdd GRAALVM_HOME/bin directory to PATHInstall GraalVM native-image utility (Run gu install native-image)Set up C Langauge environment (Varies for different OS and covered below)Finally run maven package with the native profile enabled (On Windows an extra step is required and covered below)Setting up COn a Mac run the following commandxcode-select --installOn a Linux based system run the following command# dnf (rpm-based)sudo dnf install gcc glibc-devel zlib-devel libstdc++-static# Debian-based distributions:sudo apt-get install build-essential libz-dev zlib1g-devOn Windows 10, get the Visual Studio 2019 C++ build tools and install the checked optional packages (I have used the community edition)Build native executableFor building the native image, we need to run the following commandmvn package -PnativeFor Windows 10, you must be using the command prompt (does not work on PowerShell yet). You need to run the following batch file before running the native maven build (The path to this file would vary depending upon the version of Visual Studio e.g. 2019, 2017 and if it Community or not)&quot;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat&quot;I have created a cmd file (native-build-windows.cmd) which runs both the commands for me.call &quot;C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat&quot;mvn package -PnativeOnce you run this, you would get a native executableOn Mac, it creates an executable file named quarkus-hello-world-1.0-SNAPSHOT-runner under the target directory.On Windows-10 an exe named quarkus-hello-world-1.0-SNAPSHOT-runner.exe is created under the target diectory.Run this file and do a round of testing. Note this executable will not run on different OS and may not run on different machines with same OS as well. So we need to create a container image which would run irrespective of the OS.2. Building container image with native executableLet’s start Docker and get going. (Allow file sharing on Docker)Run the following commandmvn package -Pnative -Dquarkus.native.container-build=trueIt would again build an executable but this time if you run it on your own machine, it would fail as the container build happens on the ubi-quarkus-native-image:20.2.0-java11 container.To run the executable, we can create a container image and run that with the following command# Build the imagedocker build -f src/main/docker/Dockerfile.native -t quarkus/quarkus-hello-world .# Run the imagedocker run -i --rm -p 8080:8080 quarkus/quarkus-hello-worldThis brings ubi8/ubi-minimal:8.1 image as the runtime for the executable.There is an easier way to create the container image. Just add the following Quarkus extension using the below commandmvn quarkus:add-extension -Dextensions=quarkus-container-image-jibRun the following command to build the Docker imagemvn package -Pnative -Dquarkus.native.container-build=true -Dquarkus.container-image.build=trueThe build took around 8 minutes.By default the container image group is your user-name of the PC. You can change it with setting a different value for quarkus.container-image.group in the application.properties fileNow run the docker image (Replace the container-image-group value)docker run -I --rm -p 8080:8080 &lt;container-image-group&gt;/quarkus-hello-world:1.0-SNAPSHOTStartup time difference for Jar and native executablesHere is a quick summary of the startup time for the various kinds of builds and runtime on a Windows 10 with 20GB of RAM with intel i5 processor.The jar version took around 1.773 seconds, the native machine executable started in 0.281 seconds and the native container image started in 0.017 seconds 😊.Hot code replacement for JavaHot code replacement is the idea, where we replace code which is already running. This was always there, SpringBoot Dev-tools does this when the classpath gets updated. The hot code replacement with Quarkus is cool and very similar in experience to the NodeJS based eco-system (with a watch option on source files). It detects the changes on the source files, compiles them and replaces them.Let’s see this in actionStart the project in dev modemvnw quarkus:devNow let’s return “hi” instead of “hello” (any change would do) and save the file. You would notice the source file change would be detected and it would hot replace the code.This certainly saves a few seconds to minutes (depending on your machine 😜). ❤️ this feature.Conclusion:Quarkus looks really good. I like the way it has given the much needed boost to the Java Developer experience and make us feel more productive. The supported eco-system is also promising (See it for yourself with mvn quarkus:list-extensions). I hope you would give it a try and discover for yourself.References:QuarkusGraalVMDockerQuarkus and the Java Developer Experience was originally published in The Startup on Medium, where people are continuing the conversation by highlighting and responding to this story.]]></summary></entry><entry><title type="html">REST + GraphQL (beyond BFFs)</title><link href="https://gsswain.com/2020/07/28/rest-graphql-beyond-bffs.html" rel="alternate" type="text/html" title="REST + GraphQL (beyond BFFs)" /><published>2020-07-28T00:00:00+00:00</published><updated>2020-07-28T00:00:00+00:00</updated><id>https://gsswain.com/2020/07/28/rest-graphql-beyond-bffs</id><content type="html" xml:base="https://gsswain.com/2020/07/28/rest-graphql-beyond-bffs.html"><![CDATA[<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*OTe9AFXves6mRZIroTpdCQ.png" /></figure><p>In this post, we start with a brief introduction to GraphQL and its common industry accepted usage pattern as BFFs(Backends For Frontends). Can it be used beyond that? I would focus around the below questions</p><ul><li>What is GraphQL?</li><li>Do I need to use GraphQL?</li><li>Can GraphQL be used beyond Backends For Frontends(BFFs)?</li></ul><p><em>Basic knowledge of REST is a prerequisite for understanding the concepts in this post.</em></p><h3>What is GraphQL?</h3><p>GraphQL is a <strong>query language for APIs</strong> and a <strong>runtime for fulfilling those queries with your existing data</strong>. So there are 2 components to this. A <strong>GraphQL server</strong> and a <strong>GraphQL client</strong>. Both of them talk to each other using GrpahQL query language. GraphQL is transport agnostic and works well <strong>over HTTP</strong>. The client sends a GraphQL query, the server understands what the client has asked it to do and process the request and sends the response. In the REST world, we all know what <strong>CRUD </strong>(Create, Read, Update, Delete) stands for and how it works. In the GraphQL world, the <strong>reads are Queries</strong> and the <strong>writes are Mutations</strong>. That&#39;s it 😊</p><h4>History:</h4><p><strong>Facebook</strong>’s mobile apps have been powered by <strong>GraphQL</strong> <strong>since 2012</strong>. A <strong>GraphQL spec was</strong> <strong>open sourced in 2015</strong>.</p><h4>Schema:</h4><p>GraphQL has a <strong>Schema, </strong>which consists of <strong>Query</strong> (for read operations) and <strong>Mutation </strong>(for write operations) with it’s own type definitions.</p><pre>schema {<br>  query: Query<br>  mutation: Mutation<br>}</pre><h4>Query:</h4><p>Queries are used for read operations. Let’ take a simple example in the context of Facebook. A facebook user can log in and see multiple posts from their friends with a certain number of comments. An illustrative GraphQL type definition in this case may look something like this</p><pre>type <strong>Query</strong> {<br>  posts: [<strong>Post</strong>]         # This query fetches <strong>list of Post</strong>s<br>  ...                   # Other query definitions<br>}</pre><pre>type <strong>Post</strong> {<br>  id: ID!               # Id of the post<br>  at: String!           # Time at which it was Posted<br>  caption: String!      # Caption of the post<br>  mediaUrl: String      # Url to the image or video shared<br>  location: String      # Location of the post<br>  comments: [<strong>Comment</strong>]   # Comments on the post of type Comment<br>  ...                   # Other properties definition of a post<br>}</pre><pre>type <strong>Comment</strong> { <br>  id: ID!               # Id of the comment<br>  comment: String!      # The text of the comment<br>  at: String!           # Time at which it was Commented<br>  by: String!           # The user who made the comment<br>  ...                   # Other properties definition of a Comment</pre><pre>}    </pre><h4>Sample GraphQL Query:</h4><p>A sample query to fetch posts with comments for each post would look like the following</p><pre>query {<br>  posts {<br>    id<br>    at<br>    caption<br>    mediaUrl<br>    location<br>    comments {<br>      id<br>      comment<br>      at<br>      by<br>    } <br>  }<br>}</pre><p>If you look at the above query, we only ask for the <strong>required fields and nothing more </strong>for the posts as well as the comments for each post. There could be more fields both for posts and comments, which we don&#39;t need and they are not part of the response as well.</p><h4>Sample GraphQL Response</h4><p>Here is a sample response for the above mentioned query. Notice the top level key is &quot;<strong><em>data</em></strong>&quot; followed by the query name which is &quot;<strong><em>posts</em></strong>&quot; in this case.</p><pre>{<br>   &quot;<strong>data</strong>&quot;: {<br>     &quot;<strong>posts</strong>&quot;: [<br>       {<br>         &quot;id&quot;: &quot;some-uuid&quot;,<br>         &quot;at&quot;: &quot;2020-07-26T16:10:57.076+0000&quot;,<br>         &quot;caption&quot;: &quot;My latest post!!&quot;,<br>         &quot;mediaUrl&quot;: &quot;http://somecdn/some-image.jpg&quot;,<br>         &quot;location&quot;: &quot;Pune, India&quot;,<br>         &quot;comments&quot;: [<br>            {<br>              &quot;id&quot;: &quot;some-uuid&quot;,<br>              &quot;comment&quot;: &quot;Wow, what a place!!&quot;,<br>              &quot;at&quot;: &quot;2020-07-26T16:11:05.010+0000&quot;,<br>              &quot;by&quot;: &quot;Mahesh&quot;<br>            },<br>            {<br>              &quot;id&quot;: &quot;some-uuid&quot;,<br>              &quot;comment&quot;: &quot;I have been there too!&quot;,<br>              &quot;at&quot;: &quot;2020-07-26T17:01:30.015+0000&quot;,<br>              &quot;by&quot;: &quot;Neeta&quot;<br>            }<br>          ]<br>       },<br>       ... // more posts in similar format<br>     ]<br>   }<br>}</pre><h4>Sample GraphQL Error Response</h4><p>In case of any error, the response would have a list of <strong>errors</strong> and the response would look something like this:</p><pre>{<br>  &quot;errors&quot;: [<br>    {<br>      &quot;errorType&quot;: &quot;SomeException&quot;,<br>      &quot;message&quot;: &quot;Some Error Message&quot; <br>    }<br>  ]<br>}</pre><h4>Mutation:</h4><p>Mutations are used for write operations. Again, in the context of Facebook, an user can share posts, like posts, add comments, delete comments etc. So the type definition for the mutations may look something like this:</p><pre>type <strong>Mutation</strong> {<br>  sharePost(post: Post!): Post<br>  likePost(post: Post!): Post<br>  addComment(postId: ID!, comment: Comment): Comment<br>  deleteComment(commentId: ID!): Comment<br>}</pre><p>We won&#39;t cover examples for the Mutations here, but I would add URLs in the references section.</p><h3>Do I need to use GraphQL?</h3><p>GraphQL provides a complete and understandable description of the data in your API, gives clients<strong> the power to</strong> <strong>ask for exactly what they need and nothing more</strong>, makes it easier to evolve APIs<strong> </strong>over time, and enables powerful developer tools.</p><p>GraphQL has been a popular choice for building<strong> Backends For Frontends(BFFs), </strong>where one needs to aggregate data from multiple data sources to be consumed by their various clients like Web Browsers on Mobile devices, Android App, iOS App, Web Browsers on Desktops/Laptops etc.</p><blockquote>The data required for each of the client(Desktop, Laptop, Mobile) would vary based on the amount of data they can display based on display size of the device. We can create a BFF layer for each type of client or use something like GraphQL which allows the client to ask for exactly what it needs.</blockquote><p>A picture is a worth thousand words. Let&#39;s add a few thousands 😉</p><h4>BFF without GraphQL</h4><p>In this case, all the communication happens using REST and each client has it&#39;’s own BFF layer i.e. one for Web browser, one for Android, one for iOS etc.</p><figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*MhfuM38XIOAVJbYXwwZSNQ.png" /></figure><h4>BFF with GraphQL exposed to clients</h4><p>Here the clients are GraphQL aware and they talk to the API using GraphQL. The GraphQL server talks to the microservices using REST.</p><figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*WAIvjx4RBydeOywNhnrK6Q.png" /></figure><p>One can very well have multiple GraphQL endpoints dedicated for a consumer i.e. you can still have separate GraphQL BFF for Web, Android, iOS etc. Would the duplication of Schema add value?</p><h4>BFF with GraphQL working behind the scenes</h4><p>In this case, we use GraphQL to aggregate the microservices apis but the clients still talk using REST. The clients are not aware of GraphQL and they need not make any change. The GraphQL server still talks to the microservices using REST.</p><figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*1gRvwj6wQroAKKnJ5GYf4g.png" /></figure><p>In this case also, you can have multiple BFFs for each device and each talking to multiple GraphQL APIs behind the scenes</p><h4>So do I really need GraphQL?</h4><p>Based on your service clients (if they are internal i.e. a customer service portal, external i.e. a self service portal or an external business to business customer), who controls their source code and the confidence you have on GraphQL, you would fall in one of the above categories for your BFF implementation. If you are not already using GraphQL, give it a try and discover for yourself, if the trade-offs are worth it.</p><h3>Can GraphQL be used beyond Backends For Frontends(BFFs)?</h3><p>We know for sure, GraphQL can be helpful for BFFs but can it go beyond that. Let&#39;’s see if we can use GraphQL for<strong> server-to-server communication</strong>.</p><h4>GraphQL everywhere</h4><p>In this case, you may still have an aggregator GraphQL API which can aggregate the GraphQL schema of multiple microservices and give you a Graph of your entire business model. The aggregator GraphQL server talks to the microservices using GraphQL instead of REST. The microservices also talk to each other using GraphQL.</p><figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*gC6fchSzdUhQzaqFRsyu_Q.png" /></figure><blockquote>As per Apollo, Appollo Federation is an answer to implementing GraphQL in a microservice architecture.</blockquote><h4>GraphQL and REST</h4><p>You may have some clients where you can&#39;t force them to use GraphQL. So probably you would still have to use REST. Say you are going for GraphQL everywhere, even then, during the transition you may need to support both REST and GraphQL. Let&#39;’s see how it looks</p><figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*d88u6J5a8RSu7zh8DK0WjQ.png" /></figure><h4>GraphQL for Reads and REST for writes</h4><p>One of the possibility is to use GraphQL only for read operations (This is where GraphQL brings a lot of value). The write operations can still be REST. In someway this may look like CQRS working in 2 different protocols for Commands(REST) and Queries (GraphQL). In the world where everyone is making a move towards Serverless architectures, achieving something like this is not very difficult either. Now the real question, is this worth it?</p><h3>Conclusion</h3><p>There are more possible ways of using GraphQL for server to server communication, which is not covered here. At the moment, I have used GraphQL for a very limited server to server communication and like the power it brings. I&#39;m considering to go for GraphQL for READ (within the microservices as well) and still use REST for WRITE. I would like to hear your feedback. Have you have taken this route? Have you successfully used GraphQL beyond BFFs?</p><h3>References</h3><ul><li><a href="https://martinfowler.com/articles/richardsonMaturityModel.html">REST</a> (Martin Fowler)</li><li><a href="https://graphql.org">GraphQL</a></li><li><a href="https://graphql.org/learn/queries/#mutations">GraphQL Mutations</a></li><li><a href="https://philcalcado.com/2015/09/18/the_back_end_for_front_end_pattern_bff.html">Backends For Frontends</a> (Phil Calçado)</li><li><a href="https://samnewman.io/patterns/architectural/bff/">Backends For Frontends</a> (Sam Newman)</li><li><a href="https://martinfowler.com/bliki/CQRS.html">CQRS</a> (Martin Fowler)</li><li><a href="https://www.apollographql.com/blog/apollo-federation-f260cf525d21/">Appollo Federation</a></li></ul><img src="https://medium.com/_/stat?event=post.clientViewed&referrerSource=full_rss&postId=a1cb34170fff" width="1" height="1" alt="">]]></content><author><name>Girija Swain</name></author><category term="graphql" /><category term="backends-for-frontends" /><category term="rest" /><category term="server-to-server" /><summary type="html"><![CDATA[In this post, we start with a brief introduction to GraphQL and its common industry accepted usage pattern as BFFs(Backends For Frontends). Can it be used beyond that? I would focus around the below questionsWhat is GraphQL?Do I need to use GraphQL?Can GraphQL be used beyond Backends For Frontends(BFFs)?Basic knowledge of REST is a prerequisite for understanding the concepts in this post.What is GraphQL?GraphQL is a query language for APIs and a runtime for fulfilling those queries with your existing data. So there are 2 components to this. A GraphQL server and a GraphQL client. Both of them talk to each other using GrpahQL query language. GraphQL is transport agnostic and works well over HTTP. The client sends a GraphQL query, the server understands what the client has asked it to do and process the request and sends the response. In the REST world, we all know what CRUD (Create, Read, Update, Delete) stands for and how it works. In the GraphQL world, the reads are Queries and the writes are Mutations. That&#39;s it 😊History:Facebook’s mobile apps have been powered by GraphQL since 2012. A GraphQL spec was open sourced in 2015.Schema:GraphQL has a Schema, which consists of Query (for read operations) and Mutation (for write operations) with it’s own type definitions.schema { query: Query mutation: Mutation}Query:Queries are used for read operations. Let’ take a simple example in the context of Facebook. A facebook user can log in and see multiple posts from their friends with a certain number of comments. An illustrative GraphQL type definition in this case may look something like thistype Query { posts: [Post] # This query fetches list of Posts ... # Other query definitions}type Post { id: ID! # Id of the post at: String! # Time at which it was Posted caption: String! # Caption of the post mediaUrl: String # Url to the image or video shared location: String # Location of the post comments: [Comment] # Comments on the post of type Comment ... # Other properties definition of a post}type Comment { id: ID! # Id of the comment comment: String! # The text of the comment at: String! # Time at which it was Commented by: String! # The user who made the comment ... # Other properties definition of a Comment} Sample GraphQL Query:A sample query to fetch posts with comments for each post would look like the followingquery { posts { id at caption mediaUrl location comments { id comment at by } }}If you look at the above query, we only ask for the required fields and nothing more for the posts as well as the comments for each post. There could be more fields both for posts and comments, which we don&#39;t need and they are not part of the response as well.Sample GraphQL ResponseHere is a sample response for the above mentioned query. Notice the top level key is &quot;data&quot; followed by the query name which is &quot;posts&quot; in this case.{ &quot;data&quot;: { &quot;posts&quot;: [ { &quot;id&quot;: &quot;some-uuid&quot;, &quot;at&quot;: &quot;2020-07-26T16:10:57.076+0000&quot;, &quot;caption&quot;: &quot;My latest post!!&quot;, &quot;mediaUrl&quot;: &quot;http://somecdn/some-image.jpg&quot;, &quot;location&quot;: &quot;Pune, India&quot;, &quot;comments&quot;: [ { &quot;id&quot;: &quot;some-uuid&quot;, &quot;comment&quot;: &quot;Wow, what a place!!&quot;, &quot;at&quot;: &quot;2020-07-26T16:11:05.010+0000&quot;, &quot;by&quot;: &quot;Mahesh&quot; }, { &quot;id&quot;: &quot;some-uuid&quot;, &quot;comment&quot;: &quot;I have been there too!&quot;, &quot;at&quot;: &quot;2020-07-26T17:01:30.015+0000&quot;, &quot;by&quot;: &quot;Neeta&quot; } ] }, ... // more posts in similar format ] }}Sample GraphQL Error ResponseIn case of any error, the response would have a list of errors and the response would look something like this:{ &quot;errors&quot;: [ { &quot;errorType&quot;: &quot;SomeException&quot;, &quot;message&quot;: &quot;Some Error Message&quot; } ]}Mutation:Mutations are used for write operations. Again, in the context of Facebook, an user can share posts, like posts, add comments, delete comments etc. So the type definition for the mutations may look something like this:type Mutation { sharePost(post: Post!): Post likePost(post: Post!): Post addComment(postId: ID!, comment: Comment): Comment deleteComment(commentId: ID!): Comment}We won&#39;t cover examples for the Mutations here, but I would add URLs in the references section.Do I need to use GraphQL?GraphQL provides a complete and understandable description of the data in your API, gives clients the power to ask for exactly what they need and nothing more, makes it easier to evolve APIs over time, and enables powerful developer tools.GraphQL has been a popular choice for building Backends For Frontends(BFFs), where one needs to aggregate data from multiple data sources to be consumed by their various clients like Web Browsers on Mobile devices, Android App, iOS App, Web Browsers on Desktops/Laptops etc.The data required for each of the client(Desktop, Laptop, Mobile) would vary based on the amount of data they can display based on display size of the device. We can create a BFF layer for each type of client or use something like GraphQL which allows the client to ask for exactly what it needs.A picture is a worth thousand words. Let&#39;s add a few thousands 😉BFF without GraphQLIn this case, all the communication happens using REST and each client has it&#39;’s own BFF layer i.e. one for Web browser, one for Android, one for iOS etc.BFF with GraphQL exposed to clientsHere the clients are GraphQL aware and they talk to the API using GraphQL. The GraphQL server talks to the microservices using REST.One can very well have multiple GraphQL endpoints dedicated for a consumer i.e. you can still have separate GraphQL BFF for Web, Android, iOS etc. Would the duplication of Schema add value?BFF with GraphQL working behind the scenesIn this case, we use GraphQL to aggregate the microservices apis but the clients still talk using REST. The clients are not aware of GraphQL and they need not make any change. The GraphQL server still talks to the microservices using REST.In this case also, you can have multiple BFFs for each device and each talking to multiple GraphQL APIs behind the scenesSo do I really need GraphQL?Based on your service clients (if they are internal i.e. a customer service portal, external i.e. a self service portal or an external business to business customer), who controls their source code and the confidence you have on GraphQL, you would fall in one of the above categories for your BFF implementation. If you are not already using GraphQL, give it a try and discover for yourself, if the trade-offs are worth it.Can GraphQL be used beyond Backends For Frontends(BFFs)?We know for sure, GraphQL can be helpful for BFFs but can it go beyond that. Let&#39;’s see if we can use GraphQL for server-to-server communication.GraphQL everywhereIn this case, you may still have an aggregator GraphQL API which can aggregate the GraphQL schema of multiple microservices and give you a Graph of your entire business model. The aggregator GraphQL server talks to the microservices using GraphQL instead of REST. The microservices also talk to each other using GraphQL.As per Apollo, Appollo Federation is an answer to implementing GraphQL in a microservice architecture.GraphQL and RESTYou may have some clients where you can&#39;t force them to use GraphQL. So probably you would still have to use REST. Say you are going for GraphQL everywhere, even then, during the transition you may need to support both REST and GraphQL. Let&#39;’s see how it looksGraphQL for Reads and REST for writesOne of the possibility is to use GraphQL only for read operations (This is where GraphQL brings a lot of value). The write operations can still be REST. In someway this may look like CQRS working in 2 different protocols for Commands(REST) and Queries (GraphQL). In the world where everyone is making a move towards Serverless architectures, achieving something like this is not very difficult either. Now the real question, is this worth it?ConclusionThere are more possible ways of using GraphQL for server to server communication, which is not covered here. At the moment, I have used GraphQL for a very limited server to server communication and like the power it brings. I&#39;m considering to go for GraphQL for READ (within the microservices as well) and still use REST for WRITE. I would like to hear your feedback. Have you have taken this route? Have you successfully used GraphQL beyond BFFs?ReferencesREST (Martin Fowler)GraphQLGraphQL MutationsBackends For Frontends (Phil Calçado)Backends For Frontends (Sam Newman)CQRS (Martin Fowler)Appollo Federation]]></summary></entry><entry><title type="html">SpringBoot + DigitalOcean Droplets</title><link href="https://gsswain.com/2020/07/03/springboot-digitalocean-droplets.html" rel="alternate" type="text/html" title="SpringBoot + DigitalOcean Droplets" /><published>2020-07-03T00:00:00+00:00</published><updated>2020-07-03T00:00:00+00:00</updated><id>https://gsswain.com/2020/07/03/springboot-digitalocean-droplets</id><content type="html" xml:base="https://gsswain.com/2020/07/03/springboot-digitalocean-droplets.html"><![CDATA[<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*YLJ_Go4vlfU9qDwPpOld3Q.png" /></figure>
+<p>In this post, we’ll learn how to build and deploy a simple HelloWorld <strong><em>SpringBoot</em></strong> web app on
+    a <strong><em>DigitalOcean Droplets</em></strong> (Virtual Machine). We’ll start by creating a SpringBoot web app,
+    package that into a fat JAR (You can skip this step, if are familiar with SpringBoot). After this, we’ll create a
+    <strong><em>systemd</em></strong> service file for running the web app. Then we create a Droplet, connect to that
+    using SSH, configure the Droplet to run SpringBoot App, upload the artifacts and run and test our SpringBoot web
+    app. Finally we clean up the resources.
+</p>
+<blockquote>Note: <strong>Bela</strong> is my friend and in this post we’ll all say “Hi, Bela!”</blockquote>
+<p><strong><em>Table of Contents</em></strong></p>
+<ol>
+    <li><a href="#section_1">Building a HelloWorld SpringBoot Web App</a></li>
+    <li><a href="#section_2">Systemd service file for running the Web App</a></li>
+    <li><a href="#section_3">Create a DigitalOcean Droplet</a><br>
+        1. <a href="#section_3_1">Create a key pair</a> (We’ll use this
+        for accessing the Droplet)<br>
+        2. <a href="#section_3_2">Create a project</a> (Optional step - Only if you don’t have
+        one)<br>
+        3. <a href="#section_3_3">Create a Droplet</a></li>
+    <li><a href="#section_4">SSH into the Droplet</a></li>
+    <li><a href="#section_5">Configure the Droplet for SpringBoot Web App</a><br>
+        1. <a href="#section_5_1">Install JRE in the
+            Droplet</a><br>
+        2. <a href="#section_5_2">Copy Artifacts into the Droplet</a> (JAR and systemd service file)</li>
+    <li><a href="#section_6">Run and Test the SpringBoot Web App</a><br>
+        1. <a href="#section_6_1">Run the SpringBoot Web App</a><br>
+        2. <a href="#section_6_2">Test the SpringBoot Web App</a></li>
+    <li><a href="#section_7">Clean up</a></li>
+    <li><a href="#section_8">Resources</a></li>
+</ol>
+
+<h3 id="section_1"><strong>Building a HelloWorld SpringBoot Web App</strong></h3>
+<p>Go to <a href="https://start.spring.io">Spring Initializr</a>, add the <strong><em>Spring Web</em></strong>
+    dependency and click on GENERATE. As of today, the defaults on Spring Initializr are Project type (Maven),
+    SpringBoot version (2.3.1), packaging(JAR), Java version (8). ( Also Change the group and artifact name if you would
+    like to. I have used <strong><em>com.bela</em></strong> as my group name here)</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*os2sGLaW899yq3OSVotNxA.png" /></figure>
+<p>We’ll add a <strong><em>/hello</em></strong> endpoint which returns the string “<strong><em>Hi, Bela!</em></strong>”.
+    (I have added the controller in the <em>DemoApplication.java. </em>This can and should be in a different
+    file<em>)</em></p>
+<pre>@SpringBootApplication<br>public class DemoApplication {<br><br>   public static void main(String[] args) {<br>      SpringApplication.run(DemoApplication.class, args);<br>   }<br><br>   @RestController(&quot;/&quot;)<br>   class HelloWorld {<br>      @GetMapping(&quot;hello&quot;)<br>      public String hello(){<br>         return &quot;Hi, Bela!&quot;;<br>      }<br>   }<br>}</pre>
+<p>Run the project on local</p>
+<pre>./mvnw spring-boot:run</pre>
+<p>Test the <strong><em>/hello</em></strong> endpoint on localhost</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/574/1*TAX2JKQH6Rpb6IGSRRfoWA.png" /></figure>
+<p>Now we can build and package the project (This will create the fat JAR
+    <strong><em>demo-0.0.1-SNAPSHOT.jar</em></strong> in <strong><em>target</em></strong> folder)
+</p>
+<pre>./mvnw clean package</pre>
+<h3 id="section_2">Systemd service file for running the Web App</h3>
+<p>Create a <strong><em>hello-world-spring-boot.service</em></strong> file with the following content.</p>
+<pre>[Unit]<br>Description=Hello World Demo Spring Boot<br>After=network.target<br>StartLimitIntervalSec=0<br>[Service]<br>Type=simple<br>Restart=always<br>RestartSec=1<br>User=<strong><em>root</em></strong><br><strong>ExecStart=/usr/bin/java -jar /artifact/demo-0.0.1-SNAPSHOT.jar</strong></pre>
+<pre>[Install]<br>WantedBy=multi-user.target</pre>
+<blockquote>Note: Use a different user instead of <strong>root. </strong>Here root is used to keep this example simple.
+    Also note the JAR absolute path which is <strong>/artifact. </strong>We’ll upload the JAR file into the
+    <strong>/artifact</strong> directory of the Droplet. This folder name can be anything. You must ensure the JAR
+    exists in the path we specify here.
+</blockquote>
+<h3 id="section_3">Create a DigitalOcean Droplet</h3>
+<p>Droplets are essentially virtual machines (They are like AWS EC2 instances, Azure VMs, Google Compute Engine).</p>
+<h4 id="section_3_1">Create a key pair</h4>
+<p>Before we create a Droplet, let’s create a key pair to safely access the Droplet. I’ll be using
+    <strong><em>ssh-keygen </em></strong>to generate the key pair and store them in a folder named key. (If you are on
+    windows, you can follow the link in the resouces section below.)
+</p>
+<pre>ssh-keygen -t rsa -b 4096 -C “<a href="mailto:your-email@domain.rootdomain">your-email@</a>somedomain.com” -f ./key/id_rsa</pre>
+<p>At this point, your folder should look like this</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/692/1*gLTzCSlY-n-OCF3DPm88CA.png" /></figure>
+<h4 id="section_3_2">Create a project</h4>
+<p>This step is optional. If you already have created a project, move to <a href="#section_3_3">creating a Droplet</a>.<br>If
+    you don’t have any project, then create a new project.</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*AEivt2JWQgXj-3Opmr0nKg.png" /></figure>
+<h4 id="section_3_3">Create a Droplet</h4>
+<p>Now we create a Droplet by selecting the OS distribution and version, Virtual machine plan, datacenter region, VPC
+    Network, SSH Keys, Project. We keep everything default apart from selecting the region to Bangalore and adding our
+    ssh keys for access control.</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*osh7NRQqAuHvRBolwCZi0Q.png" /></figure>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*TUusqoW1XDJWCRkZ55a0gQ.png" /></figure>
+<p>Copy the <em>generated </em>public key <strong><em>key/id_rsa.pub </em></strong>into the SSH key content section and
+    provide a name for the key.</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*cidBNDcXag9-yxL48evV1Q.png" /></figure>
+<p>Make sure you select the correct project here, if you have more than one. Now click on
+    <strong>Create Droplet</strong>.
+</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*tvZl7TR_1vKvOKV0AjmLjw.png" /></figure>
+<p>We should see something like this where it shows the Droplet under the resources with the progress indicator in blue.
+</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*XsPiJ8D1JBtinKanaHY3tA.png" /></figure>
+<p>Once the Droplet is ready, take note of the <strong><em>IP address</em></strong> and copy it as per the below image.
+    We’ll use this IP to execute the remaining steps.</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*M_1gLlhLJKt_KIyJrjcAoQ.png" /></figure>
+<h3 id="section_4"><strong>SSH into the Droplet</strong></h3>
+<p>You can use the private key to ssh into the Droplet. Open a terminal window and enter the following command. (Replace
+    the IP in bold with the public IP of your Droplet)</p>
+<pre>ssh -i key/id_rsa root@<strong>&lt;IP Address of the Droplet&gt;</strong></pre>
+<p>e.g. if I replace the IP placeholder with <strong><em>157.245.100.221, </em></strong>then the command would look like
+</p>
+<pre>ssh -i key/id_rsa root@<strong><em>157.245.100.221</em></strong></pre>
+<h3 id="section_5">Configure the Droplet for SpringBoot Web App</h3>
+<h4 id="section_5_1">Install JRE in the Droplet</h4>
+<p>Run the following commands (This needs to be run from the terminal we used to ssh into the Droplet)</p>
+<pre>sudo apt update<br>sudo apt install openjdk-8-jre-headless<br>java -version</pre>
+<p>The output of the java -version should look something like this.</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/988/1*V1Ee-RxbYVOizj1a_cXKZw.png" /></figure>
+<h4 id="section_5_2">Copy Artifacts into the Droplet</h4>
+<p>We’ll copy the JAR into <strong><em>/aritifact</em></strong> directory and copy the <strong><em>systemd</em></strong>
+    service file to <strong><em>/etc/systemd/system</em></strong> directory</p>
+<p>Create a directory named <strong><em>artifact </em></strong>in the root directory of the Droplet</p>
+<pre>mkdir /artifact</pre>
+<p>Now copy the JAR and the systemd service file into the Droplet. Open a<strong> new terminal window on your local
+        system</strong> and run the following command (Remember to replace the IP placeholder in bold with the public IP
+    of your Droplet)</p>
+<pre>scp -i key/id_rsa demo/target/demo-0.0.1-SNAPSHOT.jar root@<strong>&lt;IP Address of the Droplet&gt;</strong>:/artifact</pre>
+<pre>scp -i key/id_rsa hello-world-spring-boot.service <a href="mailto:root@157.245.100.221">root@</a><strong>&lt;IP Address of the Droplet&gt;</strong>:/etc/systemd/system</pre>
+<p>e.g. if I replace the IP placeholder with <strong><em>157.245.100.221</em></strong> the command would look like</p>
+<pre>scp -i key/id_rsa demo/target/demo-0.0.1-SNAPSHOT.jar root@<strong>157.245.100.221</strong>:/artifact</pre>
+<pre>scp -i key/id_rsa hello-world-spring-boot.service <a href="mailto:root@157.245.100.221">root@</a><strong><em>157.245.100.221</em></strong>:/etc/systemd/system</pre>
+<h3 id="section_6">Run and Test the SpringBoot Web App</h3>
+<h4 id="section_6_1">Run the SpringBoot Web App</h4>
+<p>Start the service (This needs to be run from the terminal we used to ssh into the Droplet)</p>
+<pre>systemctl start hello-world-spring-boot.service</pre>
+<p><strong>Bonus (Optional Step):</strong></p>
+<p>You can make sure to bring the service up in case of a Droplet restart, by using the following command in the Droplet
+    (Run in the ssh session).</p>
+<pre>systemctl enable hello-world-spring-boot.service</pre>
+<h4 id="section_6_2">Test the SpringBoot Web App</h4>
+<p>Now let’s test our endpoint from within the ssh session</p>
+<pre>curl http://localhost:8080/hello</pre>
+<p>Seems to be working from the ssh session. Now let’s test using the browser using the public ip. (Use your Droplet IP
+    instead of the one shown in the below image i.e. your URL would be http://<strong>&lt;IP Address of the
+        Droplet&gt;</strong>:8080/hello)</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/952/1*E9GE03T6k9kCdc0VCA23LQ.png" /></figure>
+<p>Phew! now our spring boot service runs on the Droplet. Thanks for being patient and reading till this point. I hope
+    this was helpful. Do not forget to read the clean up section to remove the resources we created (Otherwise you’ll be
+    chraged for those resources).</p>
+<h3 id="section_7"><strong>Clean up</strong></h3>
+<p>If you wanted to run this just for trying out DigitalOcean, do not forget to clean up the resources we created.
+    Delete the Droplet, Delete the project.</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*Q-enEJFn9tNZCiAhU-1O7g.png" /></figure>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/1024/1*bhkt21X_kmO5iBNFVjtoKw.png" /></figure>
+<p>For deleting the project, go to the project, then click on the <strong><em>Settings</em></strong> tab and scroll to
+    the bottom of the page and click on <strong><em>Delete Project</em></strong> button.</p>
+<figure><img alt="" src="https://cdn-images-1.medium.com/max/954/1*cOKr7yRgKEbnXw4GaR0PWw.png" /></figure>
+<h3 id="section_8">Resources</h3>
+<ul>
+    <li><a href="https://spring.io/projects/spring-boot">SpringBoot</a></li>
+    <li><a href="https://www.digitalocean.com/products/droplets/">DigitalOcean Droplets</a></li>
+    <li><a href="https://en.wikipedia.org/wiki/Systemd">systemd</a></li>
+    <li><a
+            href="https://www.digitalocean.com/docs/droplets/how-to/add-ssh-keys/">https://www.digitalocean.com/docs/droplets/how-to/add-ssh-keys/</a>
+    </li>
+    <li><a
+            href="https://github.com/GSSwain/spring-boot-on-digital-ocean-droplet">https://github.com/GSSwain/spring-boot-on-digital-ocean-droplet</a>
+    </li>
+</ul><img src="https://medium.com/_/stat?event=post.clientViewed&referrerSource=full_rss&postId=410b8bbc6fe6" width="1"
+    height="1" alt="">]]></content><author><name>Girija Swain</name></author><category term="spring-boot" /><category term="digitalocean" /><category term="droplet" /><category term="cloud" /><category term="virtual-machine" /><summary type="html"><![CDATA[In this post, we’ll learn how to build and deploy a simple HelloWorld SpringBoot web app on a DigitalOcean Droplets (Virtual Machine). We’ll start by creating a SpringBoot web app, package that into a fat JAR (You can skip this step, if are familiar with SpringBoot). After this, we’ll create a systemd service file for running the web app. Then we create a Droplet, connect to that using SSH, configure the Droplet to run SpringBoot App, upload the artifacts and run and test our SpringBoot web app. Finally we clean up the resources. Note: Bela is my friend and in this post we’ll all say “Hi, Bela!” Table of Contents Building a HelloWorld SpringBoot Web App Systemd service file for running the Web App Create a DigitalOcean Droplet 1. Create a key pair (We’ll use this for accessing the Droplet) 2. Create a project (Optional step - Only if you don’t have one) 3. Create a Droplet SSH into the Droplet Configure the Droplet for SpringBoot Web App 1. Install JRE in the Droplet 2. Copy Artifacts into the Droplet (JAR and systemd service file) Run and Test the SpringBoot Web App 1. Run the SpringBoot Web App 2. Test the SpringBoot Web App Clean up Resources]]></summary></entry></feed>
