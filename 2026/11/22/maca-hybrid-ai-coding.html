@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- Begin Jekyll SEO tag v2.9.1 -->
+<title>How I Solve AI Coding Costs with Local + Cloud LLMs: Introducing MACA | Girija Swain</title>
+<meta name="generator" content="Jekyll v3.10.0" />
+<meta property="og:title" content="How I Solve AI Coding Costs with Local + Cloud LLMs: Introducing MACA" />
+<meta name="author" content="Girija Swain" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="A practical look at how MACA routes coding tasks across local Gemma and cloud models like Gemini and Claude, using a multi-agent workflow with human-in-the-loop specs and safe staging." />
+<meta name="twitter:description" property="og:description" content="A practical look at how MACA routes coding tasks across local Gemma and cloud models like Gemini and Claude, using a multi-agent workflow with human-in-the-loop specs and safe staging." />
+<link rel="canonical" href="https://gsswain.com/2026/11/22/maca-hybrid-ai-coding.html" />
+<meta property="og:url" content="https://gsswain.com/2026/11/22/maca-hybrid-ai-coding.html" />
+<meta property="og:site_name" content="Girija Swain" />
+<meta property="og:image" content="https://gsswain.com/assets/images/posts/maca-architecture.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-11-22T00:00:00+00:00" />
+<meta property="article:modified_time" content="2026-11-22T00:00:00+00:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://gsswain.com/assets/images/posts/maca-architecture.png" />
+<meta name="twitter:title" content="How I Solve AI Coding Costs with Local + Cloud LLMs: Introducing MACA" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Girija Swain"},"dateModified":"2026-11-22T00:00:00+00:00","datePublished":"2026-11-22T00:00:00+00:00","description":"A practical look at how MACA routes coding tasks across local Gemma and cloud models like Gemini and Claude, using a multi-agent workflow with human-in-the-loop specs and safe staging.","headline":"How I Solve AI Coding Costs with Local + Cloud LLMs: Introducing MACA","image":"https://gsswain.com/assets/images/posts/maca-architecture.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://gsswain.com/2026/11/22/maca-hybrid-ai-coding.html"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://gsswain.com/assets/images/avatar.jpeg"},"name":"Girija Swain"},"url":"https://gsswain.com/2026/11/22/maca-hybrid-ai-coding.html"}</script>
+<!-- End Jekyll SEO tag -->
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+  <link rel="stylesheet" href="/assets/css/styles.css">
+  <link rel="canonical" href="https://gsswain.com/2026/11/22/maca-hybrid-ai-coding.html">
+  <link rel="alternate" type="application/rss+xml" title="Girija Swain" href="/feed.xml">
+  
+  <!-- Google Analytics -->
+  
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NK9JKFXRK7"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-NK9JKFXRK7');
+  </script>
+  
+
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer">
+</head>
+
+<body>
+  <a href="#main-content" class="skip-link visually-hidden">Skip to main content</a>
+  <header class="site-header">
+    <div class="container">
+      <nav class="site-nav" aria-label="Primary">
+        <div class="nav-brand">
+          <a class="site-title" href="/">
+            Girija Swain
+          </a>
+          <!-- <p class="site-tagline">Principal / Lead Engineer</p> -->
+        </div>
+        
+        <div class="nav-menu" id="primary-nav-menu">
+          <ul class="nav-links">
+            
+            <li class="nav-item">
+              <a href="/" 
+                 class="nav-link">
+                Home
+              </a>
+            </li>
+            
+            <li class="nav-item">
+              <a href="/about/" 
+                 class="nav-link">
+                About
+              </a>
+            </li>
+            
+            <li class="nav-item">
+              <a href="/case-studies/" 
+                 class="nav-link">
+                Case Studies
+              </a>
+            </li>
+            
+            <li class="nav-item">
+              <a href="/blog/" 
+                 class="nav-link">
+                Blog
+              </a>
+            </li>
+            
+            <li class="nav-item">
+              <a href="/contact/" 
+                 class="nav-link">
+                Contact
+              </a>
+            </li>
+            
+          </ul>
+          
+          <div class="nav-social">
+            <a href="https://linkedin.com/in/gsswain" target="_blank" rel="noopener" aria-label="LinkedIn profile">
+              <i class="fab fa-linkedin" aria-hidden="true"></i>
+            </a>
+            <a href="https://github.com/gsswain" target="_blank" rel="noopener" aria-label="GitHub profile">
+              <i class="fab fa-github" aria-hidden="true"></i>
+            </a>
+            <a href="https://stackoverflow.com/users/4601120/gsswain" target="_blank" rel="noopener" aria-label="Stack Overflow profile">
+              <i class="fab fa-stack-overflow" aria-hidden="true"></i>
+            </a>
+          </div>
+        </div>
+        
+        <button type="button" class="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="primary-nav-menu">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main-content" class="page-content" tabindex="-1">
+    <div class="container">
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">How I Solve AI Coding Costs with Local + Cloud LLMs: Introducing MACA</h1>
+      <div class="post-meta">
+        <time datetime="2026-11-22T00:00:00+00:00">
+          November 22, 2026
+        </time>
+        
+        <span class="post-author">by Girija Swain</span>
+        
+        
+        <div class="post-tags">
+          
+          <span class="tag">ai</span>
+          
+          <span class="tag">local-models</span>
+          
+          <span class="tag">coding-assistant</span>
+          
+          <span class="tag">cost-optimization</span>
+          
+          <span class="tag">llm</span>
+          
+          <span class="tag">multi-agent</span>
+          
+        </div>
+        
+      </div>
+    </header>
+
+    <div class="post-content">
+      <p>AI-assisted coding only becomes sustainable when the economics and quality trade-offs are handled well. The practical answer is not to choose between local intelligence and cloud intelligence. <strong>It is to use both, deliberately.</strong></p>
+
+<p>At a high level, I work with <strong>two kinds of models</strong>:</p>
+
+<ul>
+  <li><strong>Local LLMs</strong> running on my laptop or workstation</li>
+  <li><strong>Cloud LLMs</strong> running in hosted API services</li>
+</ul>
+
+<p><strong>The core idea is simple:</strong> keep routine, low-risk work on the machine I already own, and reserve stronger cloud models for the tasks that genuinely need deeper reasoning.</p>
+
+<blockquote>
+  <p><strong>The goal is not to use the biggest model for everything. The goal is to use the right model at the right time.</strong></p>
+</blockquote>
+
+<p>
+  <img src="/assets/images/posts/maca-local-vs-cloud.svg" alt="Local and cloud LLM routing diagram" class="img-fluid" />
+</p>
+
+<p>This is the model I use every day. <strong>It is not about choosing one side of the spectrum.</strong> It is about routing work to the right tier with minimal waste and maximum control.</p>
+
+<hr />
+
+<h2 id="two-kinds-of-ai-models-i-rely-on">Two kinds of AI models I rely on</h2>
+
+<h3 id="local-llms--fast-offline-ready-free">Local LLMs — fast, offline-ready, free</h3>
+
+<p><strong>Local models run directly on the machine I already own.</strong> They are useful for:</p>
+
+<ul>
+  <li>boilerplate and scaffolding</li>
+  <li>small refactors</li>
+  <li>file inspection</li>
+  <li>tests and simple code generation</li>
+  <li>offline work when network connectivity is limited</li>
+</ul>
+
+<p><strong>The main benefit is practical:</strong> these tasks can be completed <strong>without token usage, API billing, or network dependency.</strong></p>
+
+<h3 id="cloud-llms--stronger-reasoning-when-needed">Cloud LLMs — stronger reasoning when needed</h3>
+
+<p><strong>Cloud models are still valuable for:</strong></p>
+
+<ul>
+  <li>multi-file reasoning</li>
+  <li>larger architectural decisions</li>
+  <li>complex debugging</li>
+  <li>formal technical specifications and deeper code review</li>
+</ul>
+
+<p><strong>These are the moments where a larger model gives noticeably better results than a local one.</strong></p>
+
+<hr />
+
+<h2 id="what-maca-is">What MACA is</h2>
+
+<p><strong>Multi-Agent Coding Assistant (MACA)</strong> is the local-first, hybrid CLI assistant I am building to combine local and cloud models into one practical workflow.</p>
+
+<h3 id="a-team-of-specialized-agents-not-just-a-prompt-box">A team of specialized agents, not just a prompt box</h3>
+
+<p>MACA is <strong>an agentic AI system</strong>, not a single prompt box. Instead of asking one model to do everything in one shot, it coordinates a small team of specialized agents through a high-level pipeline:</p>
+
+<ul>
+  <li><strong>Classify &amp; Clarify:</strong> assesses task complexity and, for greenfield projects, asks quick clarifying questions (such as stack, runtime, or build tool) before writing code</li>
+  <li><strong>Plan &amp; Spec:</strong> inspects the workspace, creates a structured plan, and—for medium or complex work—drafts a technical specification and pauses for <strong>human approval</strong> before implementation starts</li>
+  <li><strong>Implement, Verify &amp; Review:</strong> generates code into an <strong>isolated staging area</strong>, checks that every planned step is actually complete, and runs an automated review-and-fix loop</li>
+  <li><strong>Promote Safely:</strong> only applies changes to the real workspace once the review passes, keeping the repository clean until the code is ready</li>
+</ul>
+
+<p><strong>This matters because software work is rarely a one-shot action.</strong> Real tasks need clarification, planning, verification, and review. Modeling that flow across specialized stages produces far more reliable output than a single monolithic prompt.</p>
+
+<h3 id="tiered-routing-with-built-in-fallbacks">Tiered routing with built-in fallbacks</h3>
+
+<p><strong>Before work begins, MACA’s router matches the task’s complexity to the right model tier:</strong></p>
+
+<ul>
+  <li><strong>Simple tasks</strong> → <strong>Local Gemma via Ollama</strong> (fast, free, on-device)</li>
+  <li><strong>Medium tasks</strong> → <strong>Google Gemini</strong> (fast, strong reasoning)</li>
+  <li><strong>Complex tasks</strong> → <strong>Anthropic Claude</strong> (deepest reasoning for harder architecture and multi-file work)</li>
+</ul>
+
+<p>If a cloud provider or local Ollama instance is offline or unconfigured, MACA falls back gracefully to the next available tier—and you can always override the model manually when you want to.</p>
+
+<p>
+  <img src="/assets/images/posts/maca-architecture.svg" alt="MACA high-level architecture diagram" class="img-fluid" />
+</p>
+
+<p>This high-level architecture keeps the experience <strong>fast, affordable, and safe in real development work</strong>, with complexity-based routing up front and a clean staging boundary before changes touch the repository.</p>
+
+<hr />
+
+<h2 id="how-i-solve-the-token-and-cost-dilemma">How I solve the token and cost dilemma</h2>
+
+<h3 id="1-solve-simple-tasks-locally--for-free">1. Solve simple tasks locally — for free</h3>
+
+<p><strong>For straightforward tasks, MACA routes to a local Gemma model running through Ollama.</strong> This is ideal for:</p>
+
+<ul>
+  <li>file inspection</li>
+  <li>boilerplate generation</li>
+  <li>small refactors</li>
+  <li>test scaffolding</li>
+  <li>routine code suggestions</li>
+</ul>
+
+<p><strong>Result:</strong> no token usage, no AI billing, and no external API dependency for routine work.</p>
+
+<h3 id="2-escalate-in-tiers-only-when-the-task-demands-it">2. Escalate in tiers only when the task demands it</h3>
+
+<p><strong>When the task needs stronger reasoning, MACA steps up to cloud models—Gemini for medium complexity, and Claude for the hardest problems.</strong></p>
+
+<p><strong>This is a much better economic model</strong> than sending every request to the most expensive frontier model by default.</p>
+
+<h3 id="3-keep-the-workspace-safe-while-iterating">3. Keep the workspace safe while iterating</h3>
+
+<p><strong>Multi-step agent loops are only useful if they do not leave half-finished code scattered across your repo.</strong> By staging changes, verifying completion, and running an automated review loop before promoting files, MACA keeps iteration contained and predictable.</p>
+
+<hr />
+
+<h2 id="why-spec-driven-development-makes-this-practical">Why spec-driven development makes this practical</h2>
+
+<p><strong>The real unlock is not just the model itself. It is the way the work is broken down.</strong></p>
+
+<p>With a spec-driven workflow, work is sliced into <strong>smaller, well-defined tasks</strong>—and for anything non-trivial, you review and approve the specification before code is generated:</p>
+
+<ul>
+  <li><strong>simple edits</strong> → skip the heavy spec step and stay on the local model</li>
+  <li><strong>medium and complex features</strong> → agree on a clear spec first, then route to the right cloud tier</li>
+  <li><strong>verification and review</strong> → catch missing pieces and quality issues before files ever land in your workspace</li>
+</ul>
+
+<p><strong>In many real coding sessions, a large share of routine work stays local</strong>, while cloud intelligence is focused where it adds the most value.</p>
+
+<hr />
+
+<h2 id="why-this-works-in-practice">Why this works in practice</h2>
+
+<p>Splitting work across local and cloud tiers changes the economics and reliability of day-to-day AI coding:</p>
+
+<ul>
+  <li><strong>Zero token spend on routine work</strong> — local compute handles the high-volume basics</li>
+  <li><strong>Selective cloud usage</strong> — frontier models are reserved for the moments that genuinely need deeper reasoning</li>
+  <li><strong>Human-in-the-loop control</strong> — specs, verification loops, and clean workspace promotion keep agentic runs predictable</li>
+</ul>
+
+<p><strong>That is why I built MACA.</strong> It is not just another chat wrapper — it is a practical way to make AI coding faster, more affordable, and more sustainable on the machine you already own.</p>
+
+<hr />
+
+<h2 id="a-note-on-modern-hardware-and-the-path-to-full-privacy">A note on modern hardware (and the path to full privacy)</h2>
+
+<p><strong>The hardware trend is also important here.</strong> High-memory developer machines like the <strong>Microsoft Surface Laptop Ultra</strong>, <strong>Surface RTX Spark Dev Box</strong>, and <strong>Apple M-series Max laptops</strong> with unified memory and strong GPU bandwidth prove that <strong>serious local AI workloads are already practical on real developer hardware.</strong></p>
+
+<p><strong>My own experience shows both ends of that spectrum:</strong> MACA is already practical on an <strong>Apple M3 Pro (18GB)</strong> laptop, and on a standalone <strong>Apple M1 Max</strong> I run heavier models locally over <strong>Ollama</strong> and hardly need to touch cloud models at all.</p>
+
+<p>It is worth being honest about privacy today: <strong>as soon as a hybrid workflow escalates a task to a cloud model, it is no longer private.</strong> Today’s hybrid approach is primarily about <strong>cost and efficiency</strong>. However, as local hardware gets more compute and memory—and local models keep closing the gap—this same architecture is a natural stepping stone to a future where <strong>all tiers run locally and the entire coding workflow can be genuinely, fully private.</strong></p>
+
+<hr />
+
+<h2 id="the-takeaway">The takeaway</h2>
+
+<p><strong>The best AI-assisted coding experience is not the one that uses the biggest model for everything.</strong> It is the one that uses the right model at the right time—with the right guardrails around it.</p>
+
+<p><strong>That is the mindset behind MACA:</strong></p>
+
+<ol>
+  <li><strong>Solve simple tasks on local compute — for free</strong></li>
+  <li><strong>Escalate across cloud tiers only when the task really demands it</strong></li>
+  <li><strong>Use specs, verification, and staging so agentic workflows stay reliable</strong></li>
+</ol>
+
+<p><strong>That is how we make AI coding cheaper, faster, and more trustworthy.</strong></p>
+
+<hr />
+
+<h2 id="try-it-out--contribute">Try it out &amp; contribute</h2>
+
+<p>MACA is open source and in active alpha development on GitHub: <strong><a href="https://github.com/GSSwain/multi-agent-coding-assistant">GSSwain/multi-agent-coding-assistant</a></strong>.</p>
+
+<p>If you’re interested in local-first AI workflows, hybrid routing, or multi-agent systems, I’d love your help — <strong>contributions, feedback, bug reports, and PRs are all welcome!</strong></p>
+
+    </div>
+
+    <footer class="post-footer">
+      <div class="post-sharing">
+        <h4>Share this post</h4>
+        <div class="sharing-buttons">
+          <a href="https://x.com/intent/tweet?url=https%3A%2F%2Fgsswain.com%2F2026%2F11%2F22%2Fmaca-hybrid-ai-coding.html&text=How+I+Solve+AI+Coding+Costs+with+Local+%2B+Cloud+LLMs%3A+Introducing+MACA" 
+             target="_blank" rel="noopener" class="share-btn twitter" aria-label="Share this post on X">
+            <i class="fab fa-x-twitter" aria-hidden="true"></i> X
+          </a>
+          <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fgsswain.com%2F2026%2F11%2F22%2Fmaca-hybrid-ai-coding.html" 
+             target="_blank" rel="noopener" class="share-btn linkedin" aria-label="Share this post on LinkedIn">
+            <i class="fab fa-linkedin" aria-hidden="true"></i> LinkedIn
+          </a>
+        </div>
+      </div>
+
+      <div class="post-navigation">
+        
+        <div class="prev-post">
+          <span class="nav-label">Previous Post</span>
+          <a href="/2025/12/07/java-serialization-performance-showdown.html">Java Serialization Performance Showdown</a>
+        </div>
+        
+        
+        
+      </div>
+
+      <div class="author-bio">
+        <div class="author-avatar">
+          <img src="/assets/images/avatar-220.jpeg" alt="Girija Swain" width="80" height="80" loading="lazy" />
+        </div>
+        <div class="author-info">
+          <h4>About the Author</h4>
+          <p>Girija Swain is a Principal / Lead Engineer with 16+ years of experience in enterprise software architecture, low-latency cloud-native systems, AI-assisted engineering, and technical leadership.</p>
+          <div class="author-links">
+            <a href="/about/">Learn More</a>
+            <a href="https://linkedin.com/in/gsswain">Connect on LinkedIn</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </article>
+</div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>Girija Swain</h3>
+          <div class="footer-social">
+            <a href="https://linkedin.com/in/gsswain" target="_blank" rel="noopener" aria-label="LinkedIn profile">
+              <i class="fab fa-linkedin" aria-hidden="true"></i>
+            </a>
+            <a href="https://github.com/gsswain" target="_blank" rel="noopener" aria-label="GitHub profile">
+              <i class="fab fa-github" aria-hidden="true"></i>
+            </a>
+            <a href="https://stackoverflow.com/users/4601120/gsswain" target="_blank" rel="noopener" aria-label="Stack Overflow profile">
+              <i class="fab fa-stack-overflow" aria-hidden="true"></i>
+            </a>
+            <a href="mailto:contact@gsswain.com" aria-label="Email Girija Swain">
+              <i class="fas fa-envelope" aria-hidden="true"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul role="list">
+            <li><a href="/about/">About</a></li>
+            <li><a href="/case-studies/">Case Studies</a></li>
+            <li><a href="/blog/">Blog</a></li>
+            <li><a href="/contact/">Contact</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Expertise</h4>
+          <ul role="list">
+            <li>Digital Transformation</li>
+            <li>Cloud &amp; Data Architecture</li>
+            <li>Low-Latency Systems &amp; APIs</li>
+            <li>AI-Assisted Engineering</li>
+          </ul>
+        </div>
+        
+        <div class="footer-section">
+          <h4>Recognition</h4>
+          <ul role="list">
+            <li>16+ Years Experience</li>
+            <li>Top 7% Stack Overflow</li>
+            <li>GCP Cloud Architect &amp; Data Engineer</li>
+            <li>GCP Generative AI Leader</li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p>&copy; 2026 Girija Swain. All rights reserved.</p>
+        <p>Built with Jekyll • Hosted on GitHub Pages</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>
