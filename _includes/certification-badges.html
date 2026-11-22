@@ -1,8 +1,8 @@
-<div class="certification-badges">
+<div class="certification-badges" role="list" aria-label="Professional certifications">
   {% for badge in site.data.certification.badges %}
-    <div class="badge">
-      <a href="{{ badge.url }}" target="_blank" rel="noopener" title="{{ badge.name }}">
-        <img src="{{ badge.image }}" alt="{{ badge.name }}" loading="lazy" />
+    <div class="badge" role="listitem">
+      <a href="{{ badge.url }}" target="_blank" rel="noopener">
+        <img src="{{ badge.image }}" alt="{{ badge.name }} (Issued {{ badge.issued }})" loading="lazy" width="110" height="110" />
       </a>
     </div>
   {% endfor %}
