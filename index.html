@@ -9,16 +9,16 @@ title: Home
     <p class="hero-subtitle">{{ site.subtitle }}</p>
     <div class="hero-stats">
       <div class="stat">
-        <span class="stat-number">15+</span>
+        <span class="stat-number">16+</span>
         <span class="stat-label">Years Experience</span>
       </div>
       <div class="stat">
-        <span class="stat-number">Top 7%</span>
-        <span class="stat-label">Stack Overflow</span>
+        <span class="stat-number">$10M+</span>
+        <span class="stat-label">Saved Annually</span>
       </div>
       <div class="stat">
-        <span class="stat-number">Millions</span>
-        <span class="stat-label">Users Impacted</span>
+        <span class="stat-number">100M+</span>
+        <span class="stat-label">Daily Requests Scale-Up</span>
       </div>
     </div>
     <div class="hero-cta">
@@ -33,23 +33,23 @@ title: Home
     <h2>Professional Highlights</h2>
     <div class="highlights-grid">
       <div class="highlight-card">
-        <div class="highlight-icon">🎯</div>
+        <div class="highlight-icon" aria-hidden="true">🎯</div>
         <h3>Current Impact at Macquarie Group</h3>
-        <ul>
-          <li>Leading enterprise-scale digital transformation of customer entitlements/authorizations</li>
-          <li>Migrated millions of customer entitlements with zero downtime</li>
-          <li>Built and scaled GCP-based platform handling millions of requests daily</li>
-          <li>Built high-performing engineering team</li>
+        <ul role="list">
+          <li>Co-owning the enterprise entitlements platform end to end — serving tens of millions of daily requests on GCP &amp; DSE Graph and leading scale-up toward hundreds of millions (5,000 TPS at 100 ms p99 SLA)</li>
+          <li>Led zero-downtime, dark-launched entitlements migrations across Business, Personal &amp; Private Banking, enabling Siebel CRM and legacy Oracle Coherence cache decommission and saving tens of millions annually</li>
+          <li>Championed AI-assisted development (GitHub Copilot, Claude Code, Gemini Enterprise Search &amp; MCP servers), cutting migration delivery time and cost ~3x</li>
+          <li>Helped grow the engineering team from 6 to 20+ engineers and mentored engineers into area leads</li>
         </ul>
       </div>
       <div class="highlight-card">
-        <div class="highlight-icon">🏆</div>
+        <div class="highlight-icon" aria-hidden="true">🏆</div>
         <h3>Career Achievements</h3>
-        <ul>
-          <li>Led multi-year migration projects without disruption in multiple organisations</li>
-          <li>Architected and built cloud platforms serving millions of users</li>
-          <li>Pioneer in microservices adoption</li>
-          <li>Delivered 8x performance improvements on page load times</li>
+        <ul role="list">
+          <li>Delivered multi-year, zero-downtime legacy decommissions (Siebel CRM, Oracle Coherence cache, and legacy Business Banking systems) across 8–10 enterprise platforms</li>
+          <li>Founding Principal Engineer for Aegon Life's cloud-native, headless, multi-tenant life insurance administration system on AWS — launched first e-commerce partnership in 6 weeks and scaled engineering 10 to 40</li>
+          <li>Delivered 8x page load performance improvement at TIAA via hybrid AngularJS-to-Angular migration</li>
+          <li>Top 7% on Stack Overflow (6K+ reputation) and triple Google Cloud certified (Cloud Architect, Data Engineer, Generative AI Leader)</li>
         </ul>
       </div>
     </div>
@@ -63,20 +63,26 @@ title: Home
       <div class="case-study-preview">
         <h3>Enterprise Banking Transformation</h3>
         <p class="company">Macquarie Group</p>
-        <p>Modernized legacy entitlements system serving millions of banking customers with zero-downtime migration.</p>
-        <a href="/case-studies/#entitlements-migration" class="read-more"> Learn more →</a>
+        <p>Retiring legacy Siebel CRM &amp; Oracle Coherence cache with zero-downtime dark launches, saving tens of millions annually and scaling toward hundreds of millions of daily requests.</p>
+        <a href="/case-studies/#entitlements-migration" class="read-more">Learn more<span class="visually-hidden"> about Enterprise Banking Transformation at Macquarie Group</span> <span aria-hidden="true">→</span></a>
       </div>
       <div class="case-study-preview">
         <h3>Cloud-Native Insurance Platform</h3>
         <p class="company">Aegon Life</p>
-        <p>Built policy administration system from scratch in startup environment with event-driven architecture.</p>
-        <a href="/case-studies/#insurance-platform" class="read-more"> Learn more →</a>
+        <p>Founding Principal Engineer building a headless, multi-tenant life insurance administration system on AWS from concept to production, launching the first B2B e-commerce partnership in 6 weeks.</p>
+        <a href="/case-studies/#insurance-platform" class="read-more">Learn more<span class="visually-hidden"> about Cloud-Native Insurance Platform at Aegon Life</span> <span aria-hidden="true">→</span></a>
       </div>
       <div class="case-study-preview">
         <h3>Performance Optimization</h3>
         <p class="company">TIAA</p>
-        <p>Achieved 8x improvement in page load times through frontend modernization and optimization strategy.</p>
-        <a href="/case-studies/#performance-boost" class="read-more"> Learn more →</a>
+        <p>Achieved 8x improvement in page load times through hybrid AngularJS 1.4 to Angular 5 migration and frontend optimization strategy.</p>
+        <a href="/case-studies/#performance-boost" class="read-more">Learn more<span class="visually-hidden"> about Performance Optimization at TIAA</span> <span aria-hidden="true">→</span></a>
+      </div>
+      <div class="case-study-preview">
+        <h3>Hybrid Multi-Agent Coding Assistant (MACA)</h3>
+        <p class="company">Open-Source R&amp;D</p>
+        <p>Built a local-first, tiered multi-agent coding assistant routing across local Gemma (Ollama), Gemini, and Claude with spec-driven staging and verification loops.</p>
+        <a href="/case-studies/#maca-multi-agent" class="read-more">Learn more<span class="visually-hidden"> about Hybrid Multi-Agent Coding Assistant (MACA)</span> <span aria-hidden="true">→</span></a>
       </div>
     </div>
   </div>
@@ -89,9 +95,9 @@ title: Home
       {% for post in site.posts limit:3 %}
       <article class="post-preview">
         <h3><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h3>
-        <p class="post-meta">{{ post.date | date: "%B %d, %Y" }}</p>
+        <p class="post-meta"><time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: "%B %d, %Y" }}</time></p>
         <p>{{ post.excerpt | strip_html | truncate: 150 }}</p>
-        <a href="{{ post.url | relative_url }}" class="read-more">Read More →</a>
+        <a href="{{ post.url | relative_url }}" class="read-more">Read More<span class="visually-hidden"> about {{ post.title }}</span> <span aria-hidden="true">→</span></a>
       </article>
       {% endfor %}
     </div>

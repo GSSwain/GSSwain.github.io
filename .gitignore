@@ -1,5 +1,28 @@
-_site
-.sass-cache
-.jekyll-cache
+# Jekyll & Ruby / Bundler
+_site/
+.sass-cache/
+.jekyll-cache/
 .jekyll-metadata
-vendor
+.bundle/
+vendor/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Editors & IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Node / Temp / Logs / Local Env
+node_modules/
+npm-debug.log*
+*.log
+.env
+.env.*
+tmp/
