@@ -15,10 +15,10 @@ Starting with deep understanding of business problems before touching any code. 
 Proven migration strategies that eliminate downtime and business disruption. I've migrated millions of customer records without a single service interruption.
 
 ### <span aria-hidden="true">👥</span> Team Multiplication
-Building capable, empowered engineering teams that own and evolve platforms independently — focusing on lasting organizational capability, not single-person dependency.
+Building capable, empowered engineering teams that own and evolve platforms independently — focusing on lasting organisational capability, not single-person dependency.
 
 ### <span aria-hidden="true">⚡</span> Context-Driven Architecture
-Selecting the right technology stack for your specific constraints – not just the latest trends. Proven across banking and insurance industries.
+Selecting the right technology stack for your specific constraints — not just the latest trends. Proven across banking and insurance industries.
 
 ---
 
@@ -70,7 +70,7 @@ Selecting the right technology stack for your specific constraints – not just 
     <header>
             <h4 class="case-study-insights-header">Key Insight</h4>
     </header>
-        <p> The secret wasn't just technical prowess – it was understanding that in banking, trust is everything. Every decision prioritized customer confidence over speed.
+        <p> The secret wasn't just technical prowess — it was understanding that in banking, trust is everything. Every decision prioritised customer confidence over speed.
         </p>
     </section>
 </section>
@@ -132,7 +132,7 @@ Selecting the right technology stack for your specific constraints – not just 
             <span aria-hidden="true">⚡</span> 8x Performance Boost: Transforming Customer Experience
         </h3>
         <p class="case-study-sub-title">
-            TIAA - Frontend Performance Optimization
+            TIAA - Frontend Performance Optimisation
         </p>
     </header>
     <section class="case-study-challenge">
@@ -140,7 +140,7 @@ Selecting the right technology stack for your specific constraints – not just 
             <h4 class="case-study-challenge-header">The Challenge</h4>
         </header>
         <p class="case-study-details">
-        TIAA's self-service account opening application was painfully slow to load. Built on outdated Angular 1.4, the application needed complete modernization without disrupting active user workflows.
+        TIAA's self-service account opening application was painfully slow to load. Built on outdated Angular 1.4, the application needed complete modernisation without disrupting active user workflows.
         </p>
     </section>
     <section class="case-study-solution">
@@ -152,7 +152,7 @@ Selecting the right technology stack for your specific constraints – not just 
         <strong>Performance Analysis:</strong> Comprehensive analysis identifying critical bottlenecks.
             </li>
         <li><strong>Hybrid Migration Strategy:</strong> Gradual Angular 1.4 to Angular 5 migration taking a hybrid approach.</li>
-        <li><strong>Frontend Optimization:</strong> Modern build processes, code splitting, and caching strategies.</li>
+        <li><strong>Frontend Optimisation:</strong> Modern build processes, code splitting, and caching strategies.</li>
         </ul>
     </section>
     <section class="case-study-results">

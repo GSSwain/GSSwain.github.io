@@ -126,27 +126,15 @@ With a spec-driven workflow, work is sliced into **smaller, well-defined tasks**
 
 ---
 
-## The economics are compelling
+## Why this works in practice
 
-This approach addresses the cost dilemma directly:
+Splitting work across local and cloud tiers changes the economics and reliability of day-to-day AI coding:
 
-- **Local work avoids token spend entirely**
-- **Cloud usage becomes tiered and selective instead of default**
-- **The most expensive model is reserved for the moments that truly need it**
+- **Zero token spend on routine work** — local compute handles the high-volume basics
+- **Selective cloud usage** — frontier models are reserved for the moments that genuinely need deeper reasoning
+- **Human-in-the-loop control** — specs, verification loops, and clean workspace promotion keep agentic runs predictable
 
-That is a very different cost profile from a pure cloud-first coding workflow.
-
----
-
-## Why this matters for real developers
-
-This approach helps developers:
-
-- **Stay productive on the machine they already own**
-- **Reduce AI bills without reducing output**
-- **Stay in control through human-in-the-loop specs and clean workspace promotion**
-
-**That is exactly why I built MACA.** It is not just another chat wrapper. **It is a practical way to make AI coding more affordable, faster, and more sustainable for day-to-day engineering work.**
+**That is why I built MACA.** It is not just another chat wrapper — it is a practical way to make AI coding faster, more affordable, and more sustainable on the machine you already own.
 
 ---
 
