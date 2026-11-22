@@ -32,8 +32,8 @@ jobs:
       run: |
         bundle exec htmlproofer ./_site \
           --disable-external \
-          --allow_hash_href
-      continue-on-error: true
+          --allow_hash_href \
+          --ignore-urls "/^http:\/\/(localhost|127\.0\.0\.1)/"
 
     - name: Deploy to GitHub Pages
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'

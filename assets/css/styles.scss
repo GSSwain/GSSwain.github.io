@@ -87,6 +87,45 @@ a {
   }
 }
 
+// Accessibility: visually-hidden utility, skip link, and keyboard focus-visible rings
+.visually-hidden:where(:not(:focus-within, :active)) {
+  position: absolute !important;
+  clip-path: inset(50%) !important;
+  overflow: hidden !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  white-space: nowrap !important;
+}
+
+.skip-link:focus-visible {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 2000;
+  background: var(--primary-color);
+  color: #ffffff;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-lg);
+  font-weight: 600;
+}
+
+:where(a:any-link, button):focus-visible {
+  outline: 3px solid var(--primary-color);
+  outline-offset: 3px;
+}
+
+.nav-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
 // Buttons
 .btn {
   display: inline-block;
@@ -296,7 +335,7 @@ section {
 }
 
 .case-studies-grid {
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
 }
 
 .posts-grid {
@@ -334,6 +373,7 @@ section {
       
       &:before {
         content: "✓";
+        content: "✓" / "";
         position: absolute;
         left: 0;
         color: var(--success-color);
@@ -922,6 +962,26 @@ section.about {
     font-size: 1.1rem;
     margin-bottom: 1.5rem;
     color: #444;
+}
+
+.about-profile {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      text-align: center;
+    }
+}
+
+.about-avatar {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    box-shadow: var(--shadow);
 }
 
 .about-what-i-do {
