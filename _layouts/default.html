@@ -24,13 +24,14 @@
   {% endif %}
 
   <!-- Font Awesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer">
 </head>
 
 <body>
+  <a href="#main-content" class="skip-link visually-hidden">Skip to main content</a>
   <header class="site-header">
     <div class="container">
-      <nav class="site-nav">
+      <nav class="site-nav" aria-label="Primary">
         <div class="nav-brand">
           <a class="site-title" href="{{ "/" | relative_url }}">
             {{ site.title | escape }}
@@ -38,12 +39,12 @@
           <!-- <p class="site-tagline">{{ site.subtitle | escape }}</p> -->
         </div>
         
-        <div class="nav-menu">
+        <div class="nav-menu" id="primary-nav-menu">
           <ul class="nav-links">
             {% for item in site.navigation %}
             <li class="nav-item">
               <a href="{{ item.url | relative_url }}" 
-                 class="nav-link{% if page.url == item.url %} active{% endif %}">
+                 class="nav-link{% if page.url == item.url %} active{% endif %}"{% if page.url == item.url %} aria-current="page"{% endif %}>
                 {{ item.title }}
               </a>
             </li>
@@ -51,28 +52,28 @@
           </ul>
           
           <div class="nav-social">
-            <a href="https://linkedin.com/in/{{ site.linkedin_username }}" target="_blank" rel="noopener">
-              <i class="fab fa-linkedin"></i>
+            <a href="https://linkedin.com/in/{{ site.linkedin_username }}" target="_blank" rel="noopener" aria-label="LinkedIn profile">
+              <i class="fab fa-linkedin" aria-hidden="true"></i>
             </a>
-            <a href="https://github.com/{{ site.github_username }}" target="_blank" rel="noopener">
-              <i class="fab fa-github"></i>
+            <a href="https://github.com/{{ site.github_username }}" target="_blank" rel="noopener" aria-label="GitHub profile">
+              <i class="fab fa-github" aria-hidden="true"></i>
             </a>
-            <a href="https://stackoverflow.com/users/{{ site.stackoverflow_id }}/gsswain" target="_blank" rel="noopener">
-              <i class="fab fa-stack-overflow"></i>
+            <a href="https://stackoverflow.com/users/{{ site.stackoverflow_id }}/gsswain" target="_blank" rel="noopener" aria-label="Stack Overflow profile">
+              <i class="fab fa-stack-overflow" aria-hidden="true"></i>
             </a>
           </div>
         </div>
         
-        <div class="nav-toggle">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
+        <button type="button" class="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="primary-nav-menu">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </button>
       </nav>
     </div>
   </header>
 
-  <main class="page-content">
+  <main id="main-content" class="page-content" tabindex="-1">
     {{ content }}
   </main>
 
@@ -82,24 +83,24 @@
         <div class="footer-section">
           <h3>Girija Swain</h3>
           <div class="footer-social">
-            <a href="https://linkedin.com/in/{{ site.linkedin_username }}" target="_blank" rel="noopener">
-              <i class="fab fa-linkedin"></i>
+            <a href="https://linkedin.com/in/{{ site.linkedin_username }}" target="_blank" rel="noopener" aria-label="LinkedIn profile">
+              <i class="fab fa-linkedin" aria-hidden="true"></i>
             </a>
-            <a href="https://github.com/{{ site.github_username }}" target="_blank" rel="noopener">
-              <i class="fab fa-github"></i>
+            <a href="https://github.com/{{ site.github_username }}" target="_blank" rel="noopener" aria-label="GitHub profile">
+              <i class="fab fa-github" aria-hidden="true"></i>
             </a>
-            <a href="https://stackoverflow.com/users/{{ site.stackoverflow_id }}/gsswain" target="_blank" rel="noopener">
-              <i class="fab fa-stack-overflow"></i>
+            <a href="https://stackoverflow.com/users/{{ site.stackoverflow_id }}/gsswain" target="_blank" rel="noopener" aria-label="Stack Overflow profile">
+              <i class="fab fa-stack-overflow" aria-hidden="true"></i>
             </a>
-            <a href="mailto:{{ site.email }}">
-              <i class="fas fa-envelope"></i>
+            <a href="mailto:{{ site.email }}" aria-label="Email Girija Swain">
+              <i class="fas fa-envelope" aria-hidden="true"></i>
             </a>
           </div>
         </div>
         
         <div class="footer-section">
           <h4>Quick Links</h4>
-          <ul>
+          <ul role="list">
             <li><a href="/about/">About</a></li>
             <li><a href="/case-studies/">Case Studies</a></li>
             <li><a href="/blog/">Blog</a></li>
@@ -109,21 +110,21 @@
         
         <div class="footer-section">
           <h4>Expertise</h4>
-          <ul>
+          <ul role="list">
             <li>Digital Transformation</li>
-            <li>Technology Leadership</li>
-            <li>Cloud Architecture</li>
-            <li>Microservices</li>
+            <li>Cloud &amp; Data Architecture</li>
+            <li>Low-Latency Systems &amp; APIs</li>
+            <li>AI-Assisted Engineering</li>
           </ul>
         </div>
         
         <div class="footer-section">
           <h4>Recognition</h4>
-          <ul>
+          <ul role="list">
+            <li>16+ Years Experience</li>
             <li>Top 7% Stack Overflow</li>
-            <li>GCP Professional Architect</li>
-            <li>AWS Solutions Architect</li>
-            <li>15+ Years Experience</li>
+            <li>GCP Cloud Architect &amp; Data Engineer</li>
+            <li>GCP Generative AI Leader</li>
           </ul>
         </div>
       </div>

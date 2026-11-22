@@ -4,9 +4,8 @@ title: Blog
 ---
 
 <div class="blog-intro">
-  <p>Welcome to my technical blog where I share insights on cloud architecture, microservices, engineering leadership,
-    and digital transformation. Learn from real-world experiences and stay updated with the latest trends in enterprise
-    software development.</p>
+  <p>Welcome to my technical blog where I share insights on cloud architecture, low-latency systems, microservices,
+    AI-assisted &amp; multi-agent engineering, JVM performance, and digital transformation.</p>
 </div>
 <div class="blog-layout">
   <div class="blog-main">
@@ -27,15 +26,15 @@ title: Blog
         <div class="post-excerpt">
           <p>{{ post.excerpt | strip_html | truncate: 150 }}</p>
         </div>
-        <a href="{{ post.url | relative_url }}" class="read-more">Read More →</a>
+        <a href="{{ post.url | relative_url }}" class="read-more">Read More<span class="visually-hidden"> about {{ post.title }}</span> <span aria-hidden="true">→</span></a>
       </article>
       {% endfor %}
     </div>
 
     {% if paginator.total_pages > 1 %}
-    <div class="pagination">
+    <nav class="pagination" aria-label="Blog pagination">
       {% if paginator.previous_page %}
-      <a href="{{ paginator.previous_page_path | relative_url }}" class="btn btn-secondary">← Newer Posts</a>
+      <a href="{{ paginator.previous_page_path | relative_url }}" class="btn btn-secondary"><span aria-hidden="true">←</span> Newer Posts</a>
       {% endif %}
 
       <span class="pagination-info">
@@ -43,31 +42,33 @@ title: Blog
       </span>
 
       {% if paginator.next_page %}
-      <a href="{{ paginator.next_page_path | relative_url }}" class="btn btn-secondary">Older Posts →</a>
+      <a href="{{ paginator.next_page_path | relative_url }}" class="btn btn-secondary">Older Posts <span aria-hidden="true">→</span></a>
       {% endif %}
-    </div>
+    </nav>
     {% endif %}
   </div>
 
-  <div class="blog-sidebar">
+  <aside class="blog-sidebar" aria-label="Blog sidebar">
     <div class="sidebar-section">
       <h3>About the Author</h3>
-      <p>Girija Swain is a seasoned software engineer and Digital Transformation Specialist with 15+ years of experience in
-        enterprise software development, architecture and technology leadership.</p>
-      <p><a href="/about/">Learn more about Girija →</a></p>
+      <p>Girija Swain is a Principal / Lead Engineer with 16+ years of experience in
+        enterprise software architecture, low-latency cloud-native platforms, AI-assisted engineering, and technical leadership.</p>
+      <p><a href="/about/">Learn more about Girija <span aria-hidden="true">→</span></a></p>
     </div>
 
     <div class="sidebar-section">
       <h3>Subscribe</h3>
-      <p>Stay updated with new posts and insights on cloud architecture and engineering leadership.</p>
+      <p>Stay updated with new posts and insights on cloud architecture, AI-assisted engineering, and technical leadership.</p>
       <a href="{{ '/feed.xml' | relative_url }}" class="btn btn-primary">RSS Feed</a>
     </div>
 
     <div class="sidebar-section">
       <h3>Connect</h3>
       <div class="social-links">
-        <a href="https://linkedin.com/in/{{ site.linkedin_username }}">LinkedIn</a>
+        <a href="https://linkedin.com/in/{{ site.linkedin_username }}" target="_blank" rel="noopener">LinkedIn</a> ·
+        <a href="https://github.com/{{ site.github_username }}" target="_blank" rel="noopener">GitHub</a> ·
+        <a href="https://stackoverflow.com/users/{{ site.stackoverflow_id }}/gsswain" target="_blank" rel="noopener">Stack Overflow</a>
       </div>
     </div>
-  </div>
+  </aside>
 </div>

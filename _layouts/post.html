@@ -31,13 +31,13 @@ layout: default
       <div class="post-sharing">
         <h4>Share this post</h4>
         <div class="sharing-buttons">
-          <a href="https://twitter.com/intent/tweet?url={{ page.url | absolute_url | url_encode }}&text={{ page.title | url_encode }}" 
-             target="_blank" rel="noopener" class="share-btn twitter">
-            <i class="fab fa-twitter"></i> Twitter
+          <a href="https://x.com/intent/tweet?url={{ page.url | absolute_url | url_encode }}&text={{ page.title | url_encode }}" 
+             target="_blank" rel="noopener" class="share-btn twitter" aria-label="Share this post on X">
+            <i class="fab fa-x-twitter" aria-hidden="true"></i> X
           </a>
           <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ page.url | absolute_url | url_encode }}" 
-             target="_blank" rel="noopener" class="share-btn linkedin">
-            <i class="fab fa-linkedin"></i> LinkedIn
+             target="_blank" rel="noopener" class="share-btn linkedin" aria-label="Share this post on LinkedIn">
+            <i class="fab fa-linkedin" aria-hidden="true"></i> LinkedIn
           </a>
         </div>
       </div>
@@ -60,11 +60,11 @@ layout: default
 
       <div class="author-bio">
         <div class="author-avatar">
-          <img src="/assets/images/avatar.jpeg" alt="Girija Swain" />
+          <img src="/assets/images/avatar-220.jpeg" alt="Girija Swain" width="80" height="80" loading="lazy" />
         </div>
         <div class="author-info">
           <h4>About the Author</h4>
-          <p>Girija Swain is a Lead Engineer and Digital Transformation Specialist with 15+ years of experience in enterprise software architecture, cloud-native systems, and engineering leadership.</p>
+          <p>Girija Swain is a Principal / Lead Engineer with 16+ years of experience in enterprise software architecture, low-latency cloud-native systems, AI-assisted engineering, and technical leadership.</p>
           <div class="author-links">
             <a href="/about/">Learn More</a>
             <a href="https://linkedin.com/in/{{ site.linkedin_username }}">Connect on LinkedIn</a>

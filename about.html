@@ -10,33 +10,58 @@ permalink: /about/
     </div>
 
     <section class="about">
-        <header class="about-intro">
-            Hi, I'm Girija — a seasoned software engineer with <span class="highlight">15+ years of experience</span>
-            solving complex business problems through innovative technology solutions and exceptional leadership. I specialize in
-            cloud-native architectures, microservices, and building high-performing engineering teams.
+        <header class="about-intro about-profile">
+            <img src="{{ '/assets/images/avatar-220.jpeg' | relative_url }}" alt="Portrait of Girija Swain" class="about-avatar" width="110" height="110" />
+            <div>
+                Hi, I'm Girija — a Principal / Lead Engineer based in Sydney with <span class="highlight">16+ years of experience</span>
+                leading digital transformation across banking and insurance, modernising legacy systems into resilient cloud-native platforms.
+                Currently a Senior Manager / Lead Engineer at <strong>Macquarie Group</strong>, I co-own the enterprise entitlements platform
+                and help scale high-performing engineering teams.
+            </div>
         </header>
-        
+
         <section class="about-what-i-do">
-            I architect, design, develop and scale event-driven cloud-native enterprise applications using Domain Driven
-            Design, Microservices, Serverless and Micro Frontends.
+            <p>
+                I architect, design, build and scale <strong>low-latency, high-throughput</strong>, event-driven cloud-native enterprise platforms across
+                <strong>GCP</strong> (GKE, Cloud Spanner, BigQuery, Dataflow, Pub/Sub, Apigee X), <strong>DSE Graph</strong>,
+                <strong>Redis</strong>, <strong>Spring Boot</strong>, and <strong>AWS</strong> (Lambda, EKS, API Gateway, DynamoDB, Neptune).
+            </p>
+            <p>
+                Day to day, I combine hands-on architecture and engineering leadership with <strong>AI-assisted &amp; agentic development</strong>
+                (GitHub Copilot, Claude Code, Gemini Enterprise Search, MCP servers, and custom design Skills) to accelerate delivery
+                without compromising quality or reliability. I also build open-source multi-agent tooling such as
+                <a href="https://github.com/GSSwain/multi-agent-coding-assistant" target="_blank" rel="noopener"><strong>MACA (Multi-Agent Coding Assistant)</strong></a>
+                — a local-first, hybrid AI coding assistant (<a href="/2026/11/22/maca-hybrid-ai-coding.html">read the blog post</a> · <a href="/case-studies/#maca-multi-agent">view case study</a>).
+            </p>
+            <p><strong>Previously:</strong></p>
+            <ul>
+                <li><strong>Aegon Life:</strong> Founding Principal Engineer launching a headless, multi-tenant life insurance administration system on AWS.</li>
+                <li><strong>JPMorgan Chase &amp; Co.:</strong> Built features on a 24/7 front-office OTC trade-capture platform handling double-digit billions USD daily.</li>
+                <li><strong>IAG, Credit Suisse, TIAA &amp; L&amp;T Infotech:</strong> Delivered large-scale frontend modernisations, microservices decompositions, and banking &amp; insurance platforms.</li>
+                <li><strong>Tata Consultancy Services (R&amp;D):</strong> Led a 15-person team at TCS's Ignite Group for Research Innovation &amp; Development (iGRID) on TouchStone, now <a href="https://www.tcsion.com/institutions/higher-education/digital-assessments/" target="_blank" rel="noopener">TCS iON Digital Assessments</a>.</li>
+            </ul>
         </section>
 
-        <blockquote class="about-quote">
-            I believe in building purpose-built simple systems that work together to solve bigger problems.
-        </blockquote>
+        <figure class="about-quote">
+            <blockquote>
+                <p>I believe in building purpose-built simple systems that work together to solve bigger problems.</p>
+            </blockquote>
+            <figcaption>— Girija Swain</figcaption>
+        </figure>
+
+        <footer>
+            <h2>Connect &amp; Learn</h2>
+            <div class="about-links">
+                <a href="https://linkedin.com/in/{{ site.linkedin_username }}" target="_blank" rel="noopener">LinkedIn</a>
+                <a href="https://www.linkedin.com/in/{{ site.linkedin_username }}/details/recommendations/" target="_blank" rel="noopener">Recommendations</a>
+                <a href="https://github.com/{{ site.github_username }}" target="_blank" rel="noopener">GitHub</a>
+                <a href="https://stackoverflow.com/users/{{ site.stackoverflow_id }}/gsswain" target="_blank"
+                    rel="noopener">Stack Overflow</a>
+                <a href="https://www.credly.com/users/{{ site.linkedin_username }}/badges" target="_blank" rel="noopener">Credly</a>
+                <a href="https://gsswain.medium.com" target="_blank" rel="noopener">Medium</a>
+                <a href="https://360software-engineers.com" target="_blank" rel="noopener">360 Software Engineers</a>
+                <a href="https://gsswain.com/slides" target="_blank" rel="noopener">Presentations</a>
+            </div>
+        </footer>
     </section>
 </div>
-        <footer>— <cite>Girija Swain</cite></footer>
-    </blockquote>
-    <footer>
-        <h2>Connect & Learn</h2>
-        <div class="about-links">
-            <a href="https://linkedin.com/in/{{ site.linkedin_username }}" target="_blank" rel="noopener">LinkedIn</a>
-            <a href="https://stackoverflow.com/users/{{ site.stackoverflow_id }}/gsswain" target="_blank"
-                rel="noopener">Stack Overflow</a>
-            <a href="https://gsswain.medium.com" target="_blank" rel="noopener">Medium</a>
-            <a href="https://360software-engineers.com" target="_blank" rel="noopener">360 Software Engineers</a>
-            <a href="https://gsswain.com/slides" target="_blank" rel="noopener">Presentations</a>
-        </div>
-    </footer>
-</section>

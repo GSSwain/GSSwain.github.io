@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="340" viewBox="0 0 920 340" role="img" aria-label="Local and cloud LLM routing diagram">
+  <rect width="920" height="340" fill="#0f172a"/>
+  <text x="460" y="42" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" fill="#e5eefb">Local LLMs vs Cloud LLMs</text>
+
+  <rect x="55" y="80" width="300" height="165" rx="18" fill="#1e293b" stroke="#60a5fa" stroke-width="2"/>
+  <text x="205" y="122" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#bfdbfe">Local LLM on laptop</text>
+  <text x="205" y="156" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13.5" fill="#dbeafe">Fast, on-device, no token bill</text>
+  <text x="205" y="182" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13.5" fill="#dbeafe">Best for simple tasks</text>
+  <text x="205" y="208" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13.5" fill="#dbeafe">No network dependency</text>
+
+  <rect x="565" y="80" width="300" height="165" rx="18" fill="#1e293b" stroke="#fbbf24" stroke-width="2"/>
+  <text x="715" y="122" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#fde68a">Cloud LLM API</text>
+  <text x="715" y="156" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13.5" fill="#fff7d6">Stronger reasoning, deeper context</text>
+  <text x="715" y="182" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13.5" fill="#fff7d6">Best for hard tasks</text>
+  <text x="715" y="208" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13.5" fill="#fff7d6">Used only when needed</text>
+
+  <rect x="340" y="270" width="240" height="44" rx="14" fill="#111827" stroke="#34d399" stroke-width="2"/>
+  <text x="460" y="297" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#d1fae5">Route each task to the right model</text>
+
+  <line x1="355" y1="162" x2="565" y2="162" stroke="#94a3b8" stroke-width="3" marker-end="url(#arrow)"/>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>
